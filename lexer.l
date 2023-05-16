@@ -5,6 +5,12 @@
 // 以及相关的说明文字        
 // */
 
+// /*  yylineno    行号
+//  *  yytext      当前的lex
+//  *  yyleng      当前lex的长度
+//  *  yylex       即这部分的函数
+// */
+
 // 这里还要include一些东西
 
 %%
