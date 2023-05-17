@@ -1,0 +1,10 @@
+// abc
+int a;
+a = 5*6;
+while(a > 0)
+{
+    a = a - 1;
+}
+.12
+456
+return a;
