@@ -41,19 +41,29 @@
 "!="    { return NE; }
 ","     { return COMMA; }
 "="     { return EQU; }
+"+="	{ return ADDEQ;}
+"-="	{ return SUBEQ;}
+"*="	{ return MULEQ;}
+"/="	{ return DIVEQ;}
+"%="	{ return MODEQ;}
 "!"     { return NOT; }
 "&&"    { return AND; }
+"&"     { return BAND; }
 "||"    { return OR; }
+"|"     { return BOR; }
 "return"    { return RETURN; }
 "if"        { return IF; }
 "while"     { return WHILE; }
 "else"      { return ELSE; }
 "for"       { return FOR; }
+"switch"	{ return SWITCH; }
+"case"		{ return CASE; }
+"default"	{ return DEFAULT; }
 ";"     { return SEMI; }
 "."     { return DOT; }
 " " | \t | \n { ; }
 "//".*  { ; }
-"int"|"char"|"float"        { yylval.sval = new std::string(yytext, yyleng); return TYPE; }
+"int"|"char"|"float"|"void" { yylval.sval = new std::string(yytext, yyleng); return TYPE; }
 [0-9]+                      { yylval.ival = atoi(yytext); return INT; } 
 [A-Za-z_][0-9A-Za-z_]*      { yylval.sval = new std::string(yytext, yyleng); return ID; }
 [0-9]+\.[0-9]+              { yylval.fval = atof(yytext); return FLOAT; }

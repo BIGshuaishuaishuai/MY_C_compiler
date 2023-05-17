@@ -1,7 +1,11 @@
 # MYC compile
 
-参考资料：南京大学编译原理实验文档
-学长代码：https://github.com/LittleJohnKhan/SPL-Complier
+参考资料：
+* 南京大学编译原理实验文档  
+* 学长代码：https://github.com/LittleJohnKhan/SPL-Complier 
+* 使用Flex Bison 和LLVM编写自己的编译器  http://www.cppblog.com/woaidongmao/archive/2009/11/11/100693.aspx
+
+
 ## 测试环境
 1. Linux version 5.10.16.3-microsoft-standard-WSL2 (oe-user@oe-host) (x86_64-msft-linux-gcc (GCC) 9.3.0, GNU ld (GNU Binutils) 2.34.0.20200220)
 2. flex 2.6.4
