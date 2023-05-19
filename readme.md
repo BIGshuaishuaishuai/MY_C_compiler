@@ -2,7 +2,7 @@
 
 参考资料：
 * 南京大学编译原理实验文档  
-* 学长代码：https://github.com/LittleJohnKhan/SPL-Complier 
+* 学长代码：https://github.com/LittleJohnKhan/SPL-Complier  https://github.com/1171847073/C-Compiler
 * 使用Flex Bison 和LLVM编写自己的编译器  http://www.cppblog.com/woaidongmao/archive/2009/11/11/100693.aspx
 
 
@@ -31,3 +31,8 @@ pass
 1. 识别八进制和十六进制
 2. 识别指数形式的浮点数
 3. 识别并过滤注释
+4. struct
+
+语法分析方面的考量：
+* 一段程序最外面是声明，包括全局变量的声明和函数的定义
+* 例如`a = 5;`这种代码只会出现在函数内，比如main函数中。所以语法分析中把这种类型作为FuncDecl的子树考虑了。

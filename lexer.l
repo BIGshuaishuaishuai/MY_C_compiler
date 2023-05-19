@@ -29,10 +29,12 @@
 "["     { return LB; }
 "]"     { return RB; }
 "+"     { return PLUS; }
-"-"     { return MINUS; }
+"-"     { return SUB; }
 "*"     { return MULT; }
 "/"     { return DIV; }
 "%"     { return MOD; }
+"<<"    { return SHL; }
+">>"    { return SHR; }
 "<"     { return LT; }
 "=="    { return EQ; }
 ">"     { return GT; }
@@ -53,13 +55,18 @@
 "|"     { return BOR; }
 "return"    { return RETURN; }
 "if"        { return IF; }
-"while"     { return WHILE; }
 "else"      { return ELSE; }
+"while"     { return WHILE; }
 "for"       { return FOR; }
+"break"     { return BREAK; }
+"continue"  { return CONTINUE; }
 "switch"	{ return SWITCH; }
 "case"		{ return CASE; }
 "default"	{ return DEFAULT; }
+"ptr"       { return PTR; }
+"array"     { return ARRAY; }
 ";"     { return SEMI; }
+":"     { return COLON; }
 "."     { return DOT; }
 " " | \t | \n { ; }
 "//".*  { ; }
