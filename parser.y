@@ -1,5 +1,5 @@
 %{
-#include "AST.hpp" 
+#include "node.hpp" 
 #include <string>
 #include <iostream>
 
@@ -9,7 +9,7 @@ void yyerror(const char *s) {
     std::exit(1); 
 }
 
-int yylex(void);
+int yylex();
 
 AST::Program *Root;
 %}
@@ -17,45 +17,45 @@ AST::Program *Root;
 %output "Parser.cpp"
 
 %union {
-    int iVal;
-    std::string *sVal;
-    double dVal;
-    char cVal;
-	std::string *strVal;
-    AST::Program *program;
-    AST::Decl *decl;
-    AST::Decls *decls; 
-    AST::FuncDecl *funcDecl;
-    AST::FuncBody *funcBody;
-    AST::VarDecl *varDecl;
-    AST::TypeDecl *typeDecl;
-    AST::VarType *varType;
-    AST::BuiltInType* builtInType;
-    AST::FieldDecls* fieldDecls;
-	AST::FieldDecl* fieldDecl;
-	AST::MemList* memList;
-    AST::Stmt *stmt;
-    AST::IfStmt *ifStmt;
-    AST::ForStmt *forStmt;
-    AST::WhileStmt *whileStmt;
-    AST::DoStmt *doStmt;
-    AST::SwitchStmt *switchStmt;
-    AST::CaseList *caseList;
-    AST::CaseStmt *caseStmt;
-    AST::BreakStmt* breakStmt;
-	AST::ContinueStmt* continueStmt;
-    AST::ReturnStmt *returnStmt;
-    AST::Stmts *stmts;
-    AST::Block *block;
-    AST::Arg *arg;
-    AST::ArgList *argList;
-    AST::VarInit *varInit;
-    AST::VarList *varList;
-    AST::Expr *expr;
-    AST::Constant* constant;
-	AST::ExprList* exprList;
-    AST::Enm *enm;
-    AST::EnmList *enmList;
+    // int iVal;
+    // std::string *sVal;
+    // double dVal;
+    // char cVal;
+	// std::string *strVal;
+    // AST::Program *program;
+    // AST::Decl *decl;
+    // AST::Decls *decls; 
+    // AST::FuncDecl *funcDecl;
+    // AST::FuncBody *funcBody;
+    // AST::VarDecl *varDecl;
+    // AST::TypeDecl *typeDecl;
+    // AST::VarType *varType;
+    // AST::BuiltInType* builtInType;
+    // AST::FieldDecls* fieldDecls;
+	// AST::FieldDecl* fieldDecl;
+	// AST::MemList* memList;
+    // AST::Stmt *stmt;
+    // AST::IfStmt *ifStmt;
+    // AST::ForStmt *forStmt;
+    // AST::WhileStmt *whileStmt;
+    // AST::DoStmt *doStmt;
+    // AST::SwitchStmt *switchStmt;
+    // AST::CaseList *caseList;
+    // AST::CaseStmt *caseStmt;
+    // AST::BreakStmt* breakStmt;
+	// AST::ContinueStmt* continueStmt;
+    // AST::ReturnStmt *returnStmt;
+    // AST::Stmts *stmts;
+    // AST::Block *block;
+    // AST::Arg *arg;
+    // AST::ArgList *argList;
+    // AST::VarInit *varInit;
+    // AST::VarList *varList;
+    // AST::Expr *expr;
+    // AST::Constant* constant;
+	// AST::ExprList* exprList;
+    // AST::Enm *enm;
+    // AST::EnmList *enmList;
 }
 
 %token  LP RP LC RC RB LB
@@ -64,7 +64,7 @@ AST::Program *Root;
         EQU ADDEQ SUBEQ MULEQ DIVEQ MODEQ 
         NOT AND BAND OR BOR
         RETURN IF WHILE ELSE FOR SWITCH CASE DEFAULT CONTINUE
-        PTR SEMI COMMA DOT TYPE
+        PTR SEMI COMMA DOT TYPE ARRAY COLON
            	
 %token<iVal> INT
 %token<sVal> ID 
@@ -83,18 +83,18 @@ AST::Program *Root;
 %type<fieldDecls>						FieldDecls
 %type<fieldDecl>						FieldDecl
 %type<memList>							MemList _MemList	
-%type<stmt>								Stmt
-%type<ifStmt>							IfStmt
-%type<forStmt>							ForStmt
-%type<whileStmt>						WhileStmt
-%type<doStmt>							DoStmt
-%type<switchStmt>						SwitchStmt
+%type<stmt>								Stm
+%type<ifStmt>							IfStm
+%type<forStmt>							ForStm
+%type<whileStmt>						WhileStm
+%type<doStmt>							DoStm
+%type<switchStmt>						SwitchStm
 %type<caseList>							CaseList
-%type<caseStmt>							CaseStmt
-%type<breakStmt>						BreakStmt
-%type<continueStmt>						ContinueStmt
-%type<returnStmt>						ReturnStmt
-%type<stmts>							Stmts
+%type<caseStmt>							CaseStm
+%type<breakStmt>						BreakStm
+%type<continueStmt>						ContinueStm
+%type<returnStmt>						ReturnStm
+%type<stmts>							Stms
 %type<block>							Block
 %type<arg>								Arg
 %type<argList>							ArgList _ArgList
@@ -103,8 +103,6 @@ AST::Program *Root;
 %type<expr>								Expr	
 %type<constant>							Constant
 %type<exprList>							ExprList _ExprList
-%type<enm>								Enm
-%type<enmList>							EnmList	_EnmList
 
 %nonassoc IF
 %nonassoc ELSE
@@ -126,7 +124,7 @@ AST::Program *Root;
 %right	DADD DSUB NOT BNOT SIZEOF//2
 %left	DOT ARW//1
 
-%start Program
+%start Root
 %%
 
 Root:       Decls
@@ -163,9 +161,6 @@ VarType:    TYPE
             | TYPE ARRAY LB INT RB
             ;
 
-args:       VarType ID
-            | VarType
-            ;
 
 Stms:       Stms stm
             | 
@@ -207,7 +202,7 @@ DoStm:      DO Stmt WHILE LP Expr RP SEMI
 SwitchStm:  SWITCH LP Expr RP LC Cases RC
             ;
 
-CaseStm:      CASE Expr COLON Stms
+CaseStm:    CASE Expr COLON Stms
             | DEFAULT Expr COLON Stms
             ;
 
@@ -220,5 +215,12 @@ BreakStm:   BREAK SEMI
 Cases:      Cases CaseStm
             ;
 
-args:           
+Args:       Args COMMA Arg 
+            | Arg
+            ;
+
+Arg:        VarType ID
+            | VarType
+            ;  
+
 %%
