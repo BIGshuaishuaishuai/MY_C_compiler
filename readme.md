@@ -32,7 +32,18 @@ pass
 2. 识别指数形式的浮点数
 3. 识别并过滤注释
 4. struct
+5. sizeof
+6. 类型转化
 
 语法分析方面的考量：
 * 一段程序最外面是声明，包括全局变量的声明和函数的定义
 * 例如`a = 5;`这种代码只会出现在函数内，比如main函数中。所以语法分析中把这种类型作为FuncDecl的子树考虑了。
+
+留有的一些疑问：
+1. yjj中数组是怎么解析的，ARRAY关键字的作用是什么
+2. PTR关键字用以表示指针，但是在EXPR中仍然有`Expr->MUL Expr`的表述，是否正确？
+
+在yjj上做出的改进：
+1. parser中删除了`Stms->CaseStm`，因为只有在switch的情况下，case才有意义，把CaseStm放到SwitchStm中了。（后续改进方向：把default在parser阶段设成唯一）
+2. parser中删除了`Expr->Expr COMMA Expr`，我不明白这一步语法解析怎么提供表达式的值，感觉没有作用。
+3. 将各种基本type统一用TYPE表示，int float char等关键字归到TYPE下面

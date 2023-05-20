@@ -41,14 +41,16 @@
 ">="    { return GE; }
 "<="    { return LE; }
 "!="    { return NE; }
-","     { return COMMA; }
 "="     { return EQU; }
-"+="	{ return ADDEQ;}
-"-="	{ return SUBEQ;}
-"*="	{ return MULEQ;}
-"/="	{ return DIVEQ;}
-"%="	{ return MODEQ;}
+"+="	{ return ADDEQ; }
+"-="	{ return SUBEQ; }
+"*="	{ return MULEQ; }
+"/="	{ return DIVEQ; }
+"%="	{ return MODEQ; }
+"<<="   { return SHLEQ; }
+">>="   { return SHREQ; }
 "!"     { return NOT; }
+"~"     { return BNOT; }
 "&&"    { return AND; }
 "&"     { return BAND; }
 "||"    { return OR; }
@@ -65,12 +67,14 @@
 "default"	{ return DEFAULT; }
 "ptr"       { return PTR; }
 "array"     { return ARRAY; }
+","     { return COMMA; }
 ";"     { return SEMI; }
 ":"     { return COLON; }
 "."     { return DOT; }
+"->"    { return ARROW; }
 " " | \t | \n { ; }
 "//".*  { ; }
-"int"|"char"|"float"|"void" { yylval.sval = new std::string(yytext, yyleng); return TYPE; }
+"int"|"char"|"float"|"void" { yylval.type = new std::string(yytext, yyleng); return TYPE; }
 [0-9]+                      { yylval.ival = atoi(yytext); return INT; } 
 [A-Za-z_][0-9A-Za-z_]*      { yylval.sval = new std::string(yytext, yyleng); return ID; }
 [0-9]+\.[0-9]+              { yylval.fval = atof(yytext); return FLOAT; }

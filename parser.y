@@ -17,10 +17,12 @@ AST::Program *Root;
 %output "Parser.cpp"
 
 %union {
-    // int iVal;
-    // std::string *sVal;
-    // double dVal;
-    // char cVal;
+    int ival;
+    std::string *sval;
+    std::string *type;
+    float fval;
+    char cval;
+
 	// std::string *strVal;
     // AST::Program *program;
     // AST::Decl *decl;
@@ -61,15 +63,16 @@ AST::Program *Root;
 %token  LP RP LC RC RB LB
         PLUS SUB MULT DIV MOD SHL SHR
         LT EQ GT GE LE NE 
-        EQU ADDEQ SUBEQ MULEQ DIVEQ MODEQ 
-        NOT AND BAND OR BOR
-        RETURN IF WHILE ELSE FOR SWITCH CASE DEFAULT CONTINUE
-        PTR SEMI COMMA DOT TYPE ARRAY COLON
+        EQU ADDEQ SUBEQ MULEQ DIVEQ MODEQ SHLEQ SHREQ
+        NOT BNOT AND BAND OR BOR
+        RETURN IF WHILE ELSE FOR BREAK SWITCH CASE DEFAULT CONTINUE
+        PTR SEMI COMMA DOT TYPE ARRAY COLON ARROW
            	
-%token<iVal> INT
-%token<sVal> ID 
-%token<dVal> FLOAT
-%token<cVal> CHAR
+%token<ival> INT
+%token<sval> ID 
+%token<type> TYPE
+%token<dval> FLOAT
+%token<cval> CHAR
 
 %type<program>							Program	
 %type<decl>								Decl	
@@ -107,22 +110,21 @@ AST::Program *Root;
 %nonassoc IF
 %nonassoc ELSE
 
-%left	COMMA //15
-%left	FUNC_CALL_ARG_LIST
-%right	ASSIGN ADDEQ SUBEQ MULEQ DIVEQ MODEQ SHLEQ SHREQ BANDEQ BOREQ BXOREQ //14
-%right	QUES COLON //13
-%left	OR//12
-%left	AND//11
-%left	BOR//10
-%left	BXOR//9
-%left	BAND//8
-%left	EQ NEQ//7
-%left	GE GT LE LT//6
-%left	SHL SHR//5
-%left	ADD SUB//4
-%left	MUL DIV MOD//3
-%right	DADD DSUB NOT BNOT SIZEOF//2
-%left	DOT ARW//1
+
+%left   COMMA
+%left   FUNC_CALL_ARG_LIST
+%right  EQU ADDEQ SUBEQ MULEQ DIVEQ MODEQ SHLEQ SHREQ
+%left	OR
+%left	AND
+%left	BOR
+%left	BAND
+%left	EQ NEQ
+%left	GE GT LE LT
+%left   SHL SHR
+%left   PLUS SUB 
+%left   MULT DIV MOD
+%right  BNOT NOT
+%left   ARROW DOT
 
 %start Root
 %%
@@ -170,20 +172,71 @@ stm:        Expr SEMI
             | ReturnStm
             | IfStm
             | WhileStm
+            | ForStm
             | DoStm
             | SwitchStm
             | ContinueStm
             | BreakStm
-            | CaseStm
             | SEMI
             | VarDecl
             | Block
             ;
 
 Block:      LC Stms RC
+            ;
 
-// 没太看懂yjj这里右递归是怎么避免的
-Expr:       Expr PLUS expr
+Expr:       Expr PLUS Expr
+            | Expr SUB Expr
+            | Expr MULT Expr
+            | Expr DIV Expr
+            | Expr MOD Expr
+            | Expr SHL Expr
+            | Expr SHR Expr
+            | Expr LT Expr
+            | Expr LE Expr
+            | Expr EQ Expr
+            | Expr GE Expr
+            | Expr GT Expr
+            | Expr NE Expr
+            | Expr EQ Expr
+            | Expr ADDEQ Expr
+            | Expr SUBEQ Expr
+            | Expr DIVEQ Expr
+            | Expr MULEQ Expr
+            | Expr MODEQ Expr
+            | Expr SHLEQ Expr
+            | Expr SHREQ Expr
+            | Expr AND Expr
+            | Expr BAND Expr
+            | Expr OR Expr
+            | Expr BOR Expr
+            | LP Expr RP
+            | Expr DOT ID
+            | Expr ARROW ID
+            | PLUS Expr %prec NOT
+            | SUB Expr  %prec NOT
+            | NOT Expr
+            | MULT Expr %prec NOT
+            | BNOT Expr %prec NOT
+            | Const
+            | ID
+            | ID LB Expr RB %prec ARROW
+            | ID LP ExprList RP
+            ;
+
+ExprList:	_ExprList COMMA Expr									{  $$ = $1; $$->push_back($3);   }
+			| Expr %prec FUNC_CALL_ARG_LIST							{  $$ = new AST::ExprList(); $$->push_back($1);   }
+			|														{  $$ = new AST::ExprList();   }
+			;
+
+_ExprList:	_ExprList COMMA Expr 									{  $$ = $1; $$->push_back($3);   }
+			| Expr %prec FUNC_CALL_ARG_LIST							{  $$ = new AST::ExprList(); $$->push_back($1);   }
+			;
+ 
+Const:      INT
+            | CHAR
+            | FLOAT
+            ; 
 
 ReturnStm:  RETURN Expr SEMI
             RETURN SEMI
