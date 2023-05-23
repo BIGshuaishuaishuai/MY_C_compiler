@@ -12,13 +12,15 @@
 //  *  yylex       即这部分的函数
 // */
     //#include "node.h"
-    //#include "parser.hpp"
+    #include "parser.hpp"
     #include <stdio.h>
     #include <string>
     #include <iostream>
     extern "C" int yywrap() {return 1;}
     using namespace std;
 %}
+
+%option outfile="lexer.cpp"
 
 %%
 

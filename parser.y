@@ -74,42 +74,36 @@ AST::Program *Root;
 %token<dval> FLOAT
 %token<cval> CHAR
 
-%type<program>							Program	
+%type<root>							    Root	
 %type<decl>								Decl	
 %type<decls>							Decls	
 %type<funcDecl>							FuncDecl
 %type<funcBody>							FuncBody	
 %type<varDecl>							VarDecl	
-%type<typeDecl>							TypeDecl	
-%type<varType>							VarType _VarType
-%type<builtInType>						BuiltInType
-%type<fieldDecls>						FieldDecls
-%type<fieldDecl>						FieldDecl
-%type<memList>							MemList _MemList	
-%type<stmt>								Stm
-%type<ifStmt>							IfStm
-%type<forStmt>							ForStm
-%type<whileStmt>						WhileStm
-%type<doStmt>							DoStm
-%type<switchStmt>						SwitchStm
-%type<caseList>							CaseList
-%type<caseStmt>							CaseStm
-%type<breakStmt>						BreakStm
-%type<continueStmt>						ContinueStm
-%type<returnStmt>						ReturnStm
-%type<stmts>							Stms
+%type<varType>							VarType 	
+%type<stm>								Stm
+%type<ifStm>							IfStm
+%type<forStm>							ForStm
+%type<whileStm>						    WhileStm
+%type<doStm>							DoStm
+%type<switchStm>						SwitchStm
+%type<cases>							Cases
+%type<caseStm>							CaseStm
+%type<breakStm>						    BreakStm
+%type<continueStm>						ContinueStm
+%type<returnStm>						ReturnStm
+%type<stms>							    Stms
 %type<block>							Block
 %type<arg>								Arg
-%type<argList>							ArgList _ArgList
+%type<args>							    Args
 %type<varInit>							VarInit	
-%type<varList>							VarList _VarList
+%type<varList>							VarList 
 %type<expr>								Expr	
-%type<constant>							Constant
+%type<const>							Const
 %type<exprList>							ExprList _ExprList
 
 %nonassoc IF
 %nonassoc ELSE
-
 
 %left   COMMA
 %left   FUNC_CALL_ARG_LIST
@@ -132,11 +126,11 @@ AST::Program *Root;
 Root:       Decls
             ;
 
-Decls:      Decls decl
+Decls:      Decls Decl
             |
             ;
 
-decl:       VarDecl
+Decl:       VarDecl
             | FuncDecl
             ;
 
@@ -164,11 +158,11 @@ VarType:    TYPE
             ;
 
 
-Stms:       Stms stm
+Stms:       Stms Stm
             | 
             ;
 
-stm:        Expr SEMI
+Stm:        Expr SEMI
             | ReturnStm
             | IfStm
             | WhileStm
