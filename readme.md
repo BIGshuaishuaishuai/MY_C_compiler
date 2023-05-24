@@ -47,3 +47,4 @@ pass
 1. parser中删除了`Stms->CaseStm`，因为只有在switch的情况下，case才有意义，把CaseStm放到SwitchStm中了。（后续改进方向：把default在parser阶段设成唯一）
 2. parser中删除了`Expr->Expr COMMA Expr`，我不明白这一步语法解析怎么提供表达式的值，感觉没有作用。
 3. 将各种基本type统一用TYPE表示，int float char等关键字归到TYPE下面
+4. Expr 类的类型和值要怎么定义，(Union?)

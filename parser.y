@@ -11,7 +11,7 @@ void yyerror(const char *s) {
 
 int yylex();
 
-AST::Program *Root;
+node::Program *Root;
 %}
 
 %output "Parser.cpp"
@@ -22,42 +22,36 @@ AST::Program *Root;
     std::string *type;
     float fval;
     char cval;
+    std::string *strVal;
 
-	// std::string *strVal;
-    // AST::Program *program;
-    // AST::Decl *decl;
-    // AST::Decls *decls; 
-    // AST::FuncDecl *funcDecl;
-    // AST::FuncBody *funcBody;
-    // AST::VarDecl *varDecl;
-    // AST::TypeDecl *typeDecl;
-    // AST::VarType *varType;
-    // AST::BuiltInType* builtInType;
-    // AST::FieldDecls* fieldDecls;
-	// AST::FieldDecl* fieldDecl;
-	// AST::MemList* memList;
-    // AST::Stmt *stmt;
-    // AST::IfStmt *ifStmt;
-    // AST::ForStmt *forStmt;
-    // AST::WhileStmt *whileStmt;
-    // AST::DoStmt *doStmt;
-    // AST::SwitchStmt *switchStmt;
-    // AST::CaseList *caseList;
-    // AST::CaseStmt *caseStmt;
-    // AST::BreakStmt* breakStmt;
-	// AST::ContinueStmt* continueStmt;
-    // AST::ReturnStmt *returnStmt;
-    // AST::Stmts *stmts;
-    // AST::Block *block;
-    // AST::Arg *arg;
-    // AST::ArgList *argList;
-    // AST::VarInit *varInit;
-    // AST::VarList *varList;
-    // AST::Expr *expr;
-    // AST::Constant* constant;
-	// AST::ExprList* exprList;
-    // AST::Enm *enm;
-    // AST::EnmList *enmList;
+    node::Program *program;
+    node::Declaration *decl;
+    node::Decls *decls; 
+    node::FuncDecl *funcDecl;
+    node::FuncBody *funcBody;
+    node::VarDecl *varDecl;
+    node::VarType *varType;
+    node::Stmt *stmt;
+    node::IfStmt *ifStmt;
+    node::ForStmt *forStmt;
+    node::WhileStmt *whileStmt;
+    node::DoStmt *doStmt;
+    node::SwitchStmt *switchStmt;
+    node::CaseList *caseList;
+    node::CaseStmt *caseStmt;
+    node::BreakStmt* breakStmt;
+	node::ContinueStmt* continueStmt;
+    node::ReturnStmt *returnStmt;
+    node::Stmts *stmts;
+    node::Block *block;
+    node::Arg *arg;
+    node::ArgList *argList;
+    node::VarInit *varInit;
+    node::VarList *varList;
+    node::Expr *expr;
+    node::Constant* constant;
+	node::ExprList* exprList;
+
 }
 
 %token  LP RP LC RC RB LB
@@ -78,28 +72,28 @@ AST::Program *Root;
 %type<decl>								Decl	
 %type<decls>							Decls	
 %type<funcDecl>							FuncDecl
-%type<funcBody>							FuncBody	
+%type<funcBody>							FuncBody
 %type<varDecl>							VarDecl	
 %type<varType>							VarType 	
-%type<stm>								Stm
-%type<ifStm>							IfStm
-%type<forStm>							ForStm
-%type<whileStm>						    WhileStm
-%type<doStm>							DoStm
-%type<switchStm>						SwitchStm
+%type<stmt>								Stm
+%type<ifStmt>							IfStm
+%type<forStmt>							ForStm
+%type<whileStmt>						WhileStm
+%type<doStmt>							DoStm
+%type<switchStmt>						SwitchStm
 %type<cases>							Cases
-%type<caseStm>							CaseStm
-%type<breakStm>						    BreakStm
-%type<continueStm>						ContinueStm
-%type<returnStm>						ReturnStm
-%type<stms>							    Stms
+%type<caseStmt>							CaseStm
+%type<breakStmt>						BreakStm
+%type<continueStmt>						ContinueStm
+%type<returnStmt>						ReturnStm
+%type<stmts>							Stms
 %type<block>							Block
 %type<arg>								Arg
-%type<args>							    Args
+%type<argList>							Args
 %type<varInit>							VarInit	
 %type<varList>							VarList 
 %type<expr>								Expr	
-%type<const>							Const
+%type<constant>							Const
 %type<exprList>							ExprList _ExprList
 
 %nonassoc IF
@@ -123,7 +117,7 @@ AST::Program *Root;
 %start Root
 %%
 
-Root:       Decls
+Root:       Decls 
             ;
 
 Decls:      Decls Decl
@@ -141,7 +135,7 @@ FuncDecl:   VarType ID LP args RP SEMI
             | VarType ID LP args RP FuncBody
             ;
 
-FuncBody:	LC Stmts RC
+FuncBody:	LC Stms RC
             ;
 
 VarList:    VarList COMMA VarInit
@@ -176,16 +170,17 @@ Stm:        Expr SEMI
             | Block
             ;
 
-Block:      LC Stms RC
+Block:      Stm
+            | LC Stms RC
             ;
 
-Expr:       Expr PLUS Expr
+Expr:         Expr PLUS Expr
             | Expr SUB Expr
             | Expr MULT Expr
             | Expr DIV Expr
             | Expr MOD Expr
             | Expr SHL Expr
-            | Expr SHR Expr
+            | Expr SHR Expr  
             | Expr LT Expr
             | Expr LE Expr
             | Expr EQ Expr
@@ -213,7 +208,7 @@ Expr:       Expr PLUS Expr
             | MULT Expr %prec NOT
             | BNOT Expr %prec NOT
             | Const
-            | ID
+            | ID 
             | ID LB Expr RB %prec ARROW
             | ID LP ExprList RP
             ;
@@ -236,14 +231,15 @@ ReturnStm:  RETURN Expr SEMI
             RETURN SEMI
             ;
 
-IfStm:      IF LP Expr RP Stm ELSE Stm
-            | IF LP Expr RP Stm
+IfStm:      IF LP Expr RP Block ELSE Block
+            | IF LP Expr RP Block
+            ;
+ForStm:     FOR LP Expr RP Block
+
+WhileStm:   WHILE LP Expr RP Block
             ;
 
-WhileStm:   WHILE LP Expr RP Stm
-            ;
-
-DoStm:      DO Stmt WHILE LP Expr RP SEMI
+DoStm:      DO Block WHILE LP Expr RP SEMI
             ;
 
 SwitchStm:  SWITCH LP Expr RP LC Cases RC
