@@ -72,8 +72,6 @@
 ","     { return COMMA; }
 ";"     { return SEMI; }
 ":"     { return COLON; }
-"."     { return DOT; }
-"->"    { return ARROW; }
 " " | \t | \n { ; }
 "//".*  { ; }
 "int"|"char"|"float"|"void" { yylval.type = new std::string(yytext, yyleng); return TYPE; }

@@ -3,13 +3,28 @@
 #include <llvm/Value.h>
 
 class CodeGenContext;
-class NStatement;
-class NExpression;
+class Stm;
+class Expr;
 class NVariableDeclaration;
 
-typedef std::vector<NStatement*> StatementList;
-typedef std::vector<NExpression*> ExpressionList;
+typedef std::vector<Stm*> StatementList;
+typedef std::vector<Expr*> ExpressionList;
 typedef std::vector<NVariableDeclaration*> VariableList;
+
+// yjj那份expr那些nodes代码重复率太高了，这里用一个OP做参数来替代了
+enum BOP {  // bi-op
+    plus = 1, sub, mult, div, mod, shl, shr, lt, le, eq, ge, gt,
+    ne, eq, addeq, subeq, diveq, muleq, modeq, shleq, shreq,
+    and, band, or, bor
+};
+
+enum SOP {  // single operation
+    splus = 1, ssub, not, smult, sbnot
+};
+
+enum type {
+    void_type = 0, char_type, float_type, int_type 
+};
 
 class Node {
 public:
@@ -18,34 +33,62 @@ public:
     virtual llvm::Value* codeGen(CodeGenContext& context) { }
 };
 
-class NExpression : public Node {
-};
+typedef vector<Decl*> Decls;
 
-class NStatement : public Node {
-};
-
-class NInteger : public NExpression {
+class Root : public Node {
 public:
-    long long value;
-    NInteger(long long value) : value(value) { }
+    Decls _decls;
+    Root() {}
     virtual llvm::Value* codeGen(CodeGenContext& context);
 };
 
-class NDouble : public NExpression {
+class Decl: public Stm {
+    
+};
+
+class Expr : public Node {
+};
+
+class Stm : public Node {
+};
+
+class Constant : public Expr {
 public:
-    double value;
-    NDouble(double value) : value(value) { }
+    int _type;
+    Constant* _val;
+    Constant(int __type) : type(__type) { }
     virtual llvm::Value* codeGen(CodeGenContext& context);
 };
 
-class NIdentifier : public NExpression {
+class Int : public Constant {
+public:
+    long long _value;
+    Int(long long __value, int __type = int_type) : Constant(__type), _value(__value) { }
+    virtual llvm::Value* codeGen(CodeGenContext& context);
+};
+
+class Float : public Constant {
+public:
+    double _value;
+    Float(double __value, int __type = float_type) : Constant(__type), _value(__value) { }
+    virtual llvm::Value* codeGen(CodeGenContext& context);
+};
+
+class Char : public Constant {
+public:
+    char _value;
+    Char(char __value, int __type = float_type) : Constant(__type), _value(__value) { }
+    virtual llvm::Value* codeGen(CodeGenContext& context);
+};
+
+class ID : public Expr {
 public:
     std::string name;
     NIdentifier(const std::string& name) : name(name) { }
     virtual llvm::Value* codeGen(CodeGenContext& context);
 };
 
-class NMethodCall : public NExpression {
+class NMethodCall : public Expr {
 public:
     const NIdentifier& id;
     ExpressionList arguments;
@@ -55,53 +98,62 @@ public:
     virtual llvm::Value* codeGen(CodeGenContext& context);
 };
 
-class NBinaryOperator : public NExpression {
+class BINOP : public Expr {
 public:
     int op;
-    NExpression& lhs;
-    NExpression& rhs;
-    NBinaryOperator(NExpression& lhs, int op, NExpression& rhs) :
+    Expr& lhs;
+    Expr& rhs;
+    BINOP(Expr& lhs, int op, Expr& rhs) :
         lhs(lhs), rhs(rhs), op(op) { }
     virtual llvm::Value* codeGen(CodeGenContext& context);
 };
 
-class NAssignment : public NExpression {
+class SOP : public Expr {
+public:
+    int op;
+    Expr& lhs;
+    SOP(Expr& lhs, int op) :
+        lhs(lhs), op(op) { }
+    virtual llvm::Value* codeGen(CodeGenContext& context);
+};
+
+class NAssignment : public Expr {
 public:
     NIdentifier& lhs;
-    NExpression& rhs;
-    NAssignment(NIdentifier& lhs, NExpression& rhs) : 
+    Expr& rhs;
+    NAssignment(NIdentifier& lhs, Expr& rhs) : 
         lhs(lhs), rhs(rhs) { }
     virtual llvm::Value* codeGen(CodeGenContext& context);
 };
 
-class NBlock : public NExpression {
+class NBlock : public Expr {
 public:
     StatementList statements;
     NBlock() { }
     virtual llvm::Value* codeGen(CodeGenContext& context);
 };
 
-class NExpressionStatement : public NStatement {
+class ExprStatement : public Stm {
 public:
-    NExpression& expression;
-    NExpressionStatement(NExpression& expression) : 
+    Expr& expression;
+    ExprStatement(Expr& expression) : 
         expression(expression) { }
     virtual llvm::Value* codeGen(CodeGenContext& context);
 };
 
-class NVariableDeclaration : public NStatement {
+class NVariableDeclaration : public Stm {
 public:
     const NIdentifier& type;
     NIdentifier& id;
-    NExpression *assignmentExpr;
+    Expr *assignmentExpr;
     NVariableDeclaration(const NIdentifier& type, NIdentifier& id) :
         type(type), id(id) { }
-    NVariableDeclaration(const NIdentifier& type, NIdentifier& id, NExpression *assignmentExpr) :
+    NVariableDeclaration(const NIdentifier& type, NIdentifier& id, Expr *assignmentExpr) :
         type(type), id(id), assignmentExpr(assignmentExpr) { }
     virtual llvm::Value* codeGen(CodeGenContext& context);
 };
 
-class NFunctionDeclaration : public NStatement {
+class NFunctionDeclaration : public Stm {
 public:
     const NIdentifier& type;
     const NIdentifier& id;

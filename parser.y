@@ -66,7 +66,7 @@ AST::Program *Root;
         EQU ADDEQ SUBEQ MULEQ DIVEQ MODEQ SHLEQ SHREQ
         NOT BNOT AND BAND OR BOR
         RETURN IF WHILE ELSE FOR BREAK SWITCH CASE DEFAULT CONTINUE
-        PTR SEMI COMMA DOT TYPE ARRAY COLON ARROW
+        PTR SEMI COMMA TYPE ARRAY COLON
            	
 %token<ival> INT
 %token<sval> ID 
@@ -118,7 +118,6 @@ AST::Program *Root;
 %left   PLUS SUB 
 %left   MULT DIV MOD
 %right  BNOT NOT
-%left   ARROW DOT
 
 %start Root
 %%
@@ -205,8 +204,6 @@ Expr:       Expr PLUS Expr
             | Expr OR Expr
             | Expr BOR Expr
             | LP Expr RP
-            | Expr DOT ID
-            | Expr ARROW ID
             | PLUS Expr %prec NOT
             | SUB Expr  %prec NOT
             | NOT Expr
@@ -214,7 +211,7 @@ Expr:       Expr PLUS Expr
             | BNOT Expr %prec NOT
             | Const
             | ID
-            | ID LB Expr RB %prec ARROW
+            | ID LB Expr RB 
             | ID LP ExprList RP
             ;
 
