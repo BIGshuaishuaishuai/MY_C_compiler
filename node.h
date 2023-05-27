@@ -66,25 +66,40 @@ class Node {
 public:
     Node() {}
     virtual ~Node() {}
-    virtual llvm::Value* codeGen(CodeGenContext& context) { }
+    virtual llvm::Value* codeGen(CodeGenContext& context) {}
 };
 
 typedef vector<Decl*> Decls;
 
 class Root : public Node {
 public:
-    Decls _decls;
-    Root() {}
+    Decls* _decls;
+    Root(Decls* __d): _decls(__d) {}
+    ~Root() {}
     virtual llvm::Value* codeGen(CodeGenContext& context);
 };
 
 class Decl: public Stm {
+public:
+    Decl() {}
+    ~Decl() {}
+    virtual llvm::Value* codeGen(CodeGenContext& context);
+};
+
+class FuncDecl: poublic
+
+class Stm : public Node {
+public:
+    Stm() {}
+    ~Stm() {}
+    virtual llvm::Value* codeGen(CodeGenContext& context);
 };
 
 class Expr : public Node {
-};
-
-class Stm : public Node {
+public:
+    Expr() {}
+    ~Expr() {}
+    virtual llvm::Value* codeGen(CodeGenContext& context);
 };
 
 class Constant : public Expr {
@@ -92,6 +107,7 @@ public:
     int _type;
     Constant* _val;
     Constant(int __type) : type(__type) { }
+    ~Constant() {}
     virtual llvm::Value* codeGen(CodeGenContext& context);
 };
 
@@ -99,6 +115,7 @@ class Int : public Constant {
 public:
     long long _value;
     Int(long long __value, int __type = int_type) : Constant(__type), _value(__value) { }
+    ~Int() {}
     virtual llvm::Value* codeGen(CodeGenContext& context);
 };
 
@@ -106,6 +123,7 @@ class Float : public Constant {
 public:
     double _value;
     Float(double __value, int __type = float_type) : Constant(__type), _value(__value) { }
+    ~Float() {}
     virtual llvm::Value* codeGen(CodeGenContext& context);
 };
 
@@ -113,58 +131,55 @@ class Char : public Constant {
 public:
     char _value;
     Char(char __value, int __type = float_type) : Constant(__type), _value(__value) { }
+    ~Char() {}
     virtual llvm::Value* codeGen(CodeGenContext& context);
 };
 
 class ID : public Expr {
 public:
-    std::string name;
-    NIdentifier(const std::string& name) : name(name) { }
+    std::string _name;
+    ID(const std::string& __name) : _name(__name) { }
+    ~ID() {}
     virtual llvm::Value* codeGen(CodeGenContext& context);
 };
 
 class NMethodCall : public Expr {
 public:
-    const NIdentifier& id;
-    ExpressionList arguments;
-    NMethodCall(const NIdentifier& id, ExpressionList& arguments) :
-        id(id), arguments(arguments) { }
-    NMethodCall(const NIdentifier& id) : id(id) { }
+    ID* _FuncName;
+    Args _arguments;
+    NMethodCall(const ID& id, Args& arguments) :
+        ID(id), Args(arguments) { }
+    NMethodCall(const ID& id) : id(id) { }
+    ~NMethodCall() {}
     virtual llvm::Value* codeGen(CodeGenContext& context);
 };
 
 class BINOP : public Expr {
 public:
     int op;
-    Expr& lhs;
-    Expr& rhs;
-    BINOP(Expr& lhs, int op, Expr& rhs) :
+    Expr* lhs;
+    Expr* rhs;
+    BINOP(Expr* lhs, int op, Expr* rhs) :
         lhs(lhs), rhs(rhs), op(op) { }
+    ~BINOP() {}
     virtual llvm::Value* codeGen(CodeGenContext& context);
 };
 
 class SOP : public Expr {
 public:
     int op;
-    Expr& lhs;
-    SOP(Expr& lhs, int op) :
+    Expr* lhs;
+    SOP(Expr* lhs, int op) :
         lhs(lhs), op(op) { }
+    ~SOP() {}
     virtual llvm::Value* codeGen(CodeGenContext& context);
 };
 
-class NAssignment : public Expr {
+class Block : public Expr {
 public:
-    NIdentifier& lhs;
-    Expr& rhs;
-    NAssignment(NIdentifier& lhs, Expr& rhs) : 
-        lhs(lhs), rhs(rhs) { }
-    virtual llvm::Value* codeGen(CodeGenContext& context);
-};
-
-class NBlock : public Expr {
-public:
-    StatementList statements;
-    NBlock() { }
+    Stms statements;
+    Block(Stm* s):  { }
+    ~Block() {}
     virtual llvm::Value* codeGen(CodeGenContext& context);
 };
 

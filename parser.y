@@ -116,11 +116,11 @@ node::Program *Root;
 %start Root
 %%
 
-Root:       Decls 
+Root:       Decls { $$ = new node::Root(*$1); }
             ;
 
-Decls:      Decls Decl
-            |
+Decls:      Decls Decl  { $1->push_back($2);    $$ = $1; }
+            |           { $$ = new node::Decls(); }
             ;
 
 Decl:       VarDecl
