@@ -14,8 +14,7 @@ class Node;
             class Arg;
         class VarDecl;
             class VarInit;
-
-
+            
     class VarType;
         class PtrType;
         class ArrayType;
@@ -42,6 +41,7 @@ class Node;
             class Float;
             class Char;
         class FuncCall;
+        class ArrayCall;
 
 typedef std::vector<Stm*> Stms;
 typedef std::vector<Decl*> Decls;
@@ -111,7 +111,7 @@ public:
     llvm::Value* CodeGen(CodeGenerator& __Generator);
 };
 
-class VarDecl: public Node {
+class VarDecl: public Decl {
 public:
     VarType* _Type;
     VarList* _list;
@@ -173,15 +173,17 @@ public:
 // if-else 这里只支持一个else好了
 class IfStm : public Stm{
 public:
-    Stm* _ifStm;
-    Stm* _elseifStm;
-    int _ifelse;
-    IfStm(Stm* __ifStm, Stm* __elseifStm, int __ifelse) : _ifStm(__ifStm), _elseifStm(__elseifStm), _ifelse(__ifelse) {}
+    Expr* _switch;
+    Block* _ifStm;
+    Block* _elseifStm;
+    bool _ifelse;   // true: has else; false: no else
+    IfStm(Expr* __switch, Block* __ifStm, Block* __elseifStm, bool __ifelse) : 
+        _switch(__switch), _ifStm(__ifStm), _elseifStm(__elseifStm), _ifelse(__ifelse) {}
     ~IfStm() {}
-    const Stm* _getifStm() {return _ifStm;}
-    const Stm* _getelseStm() {return _elseifStm;}
-    void changeIfStm(Stm* __ifStm){_ifStm = __ifStm;}
-    void changeElseStm(Stm* _elseifStm){ _elseifStm = __elseifStm;}
+    const Block* _getifStm() {return _ifStm;}
+    const Block* _getelseStm() {return _elseifStm;}
+    void changeIfStm(Block* __ifStm){_ifStm = __ifStm;}
+    void changeElseStm(Block* _elseifStm){ _elseifStm = __elseifStm;}
     virtual llvm::Value* codeGen(CodeGenContext& context){ }
 
 };
@@ -273,8 +275,8 @@ public:
 
 class Block : public Expr {
 public:
-    Stms statements;
-    Block(Stm* s):  { }
+    Stms _statements;
+    Block(Stm* __s): _statements(__s) { }
     ~Block() {}
     virtual llvm::Value* codeGen(CodeGenContext& context);
 };
@@ -318,7 +320,6 @@ public:
 class Constant : public Expr {
 public:
     int _type;
-    Constant* _val;
     Constant(int __type) : type(__type) { }
     ~Constant() {}
     virtual llvm::Value* codeGen(CodeGenContext& context);
@@ -343,7 +344,7 @@ public:
 class Char : public Constant {
 public:
     char _value;
-    Char(char __value, int __type = float_type) : Constant(__type), _value(__value) { }
+    Char(char __value, int __type = char_type) : Constant(__type), _value(__value) { }
     ~Char() {}
     virtual llvm::Value* codeGen(CodeGenContext& context);
 };
@@ -351,18 +352,20 @@ public:
 // 这里记得要检验一下参数数量对不对
 class FuncCall : public Expr {
 public:
-    ID* _FuncName;
+    std::string _FuncName;
     ExprList* _arguments;
-    FuncCall(ID* __FuncName, ExprList* __arguments) :
+    FuncCall(std::string __FuncName, ExprList* __arguments) :
         _FuncName(__FuncName), _arguments(__arguments) { }
     ~FuncCall() {}
     virtual llvm::Value* codeGen(CodeGenContext& context);
 };
 
-class ExprStatement : public Stm {
+class ArrayCall : public Expr {
 public:
-    Expr* _expression;
-    ExprStatement(Expr* _expression) : 
-        _expression(expression) { }
+    std::string _id;
+    Expr* _num;
+    ArrayCall(const std::string& __id, Expr* __num) : 
+        _id(__id), _num(__num) {}
+    ~ArrayCall() {}
     virtual llvm::Value* codeGen(CodeGenContext& context);
-};0 
+};
