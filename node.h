@@ -3,13 +3,49 @@
 #include <llvm/Value.h>
 
 class CodeGenContext;
-class Stm;
-class Expr;
+
 class NVariableDeclaration;
 
-typedef std::vector<Stm*> StatementList;
+class Node;
+    class Root;
+    class Decl;
+    class FuncDecl;
+        class FuncBody;
+        class Arg;
+    class VarDecl;
+        class VarInit;
+
+
+    class VarType;
+        class PtrType;
+        class ArrayType;
+
+    class Stm;
+		class IfStm;
+		class ForStm;
+		class WhileStm;
+		class DoStm;
+		class SwitchStm;
+			class CaseStm;
+		class BreakStm;
+		class ContinueStm;
+		class ReturnStm;
+		class Block;
+
+    class Expr;
+        class SOP;
+        class BINOP;
+        class Constant;
+            class Int;
+            class Float;
+            class Char;
+        
+
+typedef std::vector<Stm*> Stms;
 typedef std::vector<Expr*> ExpressionList;
-typedef std::vector<NVariableDeclaration*> VariableList;
+typedef std::vector<CaseStm*> Cases;
+typedef std::vector<VarInit*> VarList;
+typedef std::vector<Arg*> Args;
 
 // yjj那份expr那些nodes代码重复率太高了，这里用一个OP做参数来替代了
 enum BOP {  // bi-op
@@ -19,7 +55,7 @@ enum BOP {  // bi-op
 };
 
 enum SOP {  // single operation
-    splus = 1, ssub, not, smult, sbnot
+    splus = 1, ssub,  not, smult, sbnot
 };
 
 enum type {
@@ -43,7 +79,6 @@ public:
 };
 
 class Decl: public Stm {
-    
 };
 
 class Expr : public Node {

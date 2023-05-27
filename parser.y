@@ -130,8 +130,8 @@ Decl:       VarDecl
 VarDecl:    VarType VarList SEMI
             ;
 
-FuncDecl:   VarType ID LP args RP SEMI
-            | VarType ID LP args RP FuncBody
+FuncDecl:   VarType ID LP Args RP SEMI
+            | VarType ID LP Args RP FuncBody
             ;
 
 FuncBody:	LC Stms RC
@@ -146,7 +146,7 @@ VarInit:    ID
             ;
 
 VarType:    TYPE
-            | PTR TYPE 
+            | TYPE PTR
             | TYPE ARRAY LB INT RB
             ;
 
@@ -206,7 +206,7 @@ Expr:         Expr PLUS Expr
             | BNOT Expr %prec NOT
             | Const
             | ID
-            | ID LB Expr RB %prec ARROW
+            | ID LB Expr RB 
             | ID LP ExprList RP
             ;
 
@@ -245,7 +245,7 @@ SwitchStm:  SWITCH LP Expr RP LC Cases RC
 CaseStm:    CASE Expr COLON Stms
             | DEFAULT Expr COLON Stms
             ;
-
+ 
 ContinueStm:CONTINUE SEMI
             ;
 
