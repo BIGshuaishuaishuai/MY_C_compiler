@@ -45,7 +45,7 @@ class Node;
 
 typedef std::vector<Stm*> Stms;
 typedef std::vector<Decl*> Decls;
-typedef std::vector<Expr*> ExpressionList;
+typedef std::vector<Expr*> ExprList;
 typedef std::vector<CaseStm*> Cases;
 typedef std::vector<VarInit*> VarList;
 typedef std::vector<Arg*> Args;
@@ -348,13 +348,13 @@ public:
     virtual llvm::Value* codeGen(CodeGenContext& context);
 };
 
+// 这里记得要检验一下参数数量对不对
 class FuncCall : public Expr {
 public:
     ID* _FuncName;
-    Args _arguments;
-    FuncCall(const ID& id, Args& arguments) :
-        ID(id), Args(arguments) { }
-    FuncCall(const ID& id) : id(id) { }
+    ExprList* _arguments;
+    FuncCall(ID* __FuncName, ExprList* __arguments) :
+        _FuncName(__FuncName), _arguments(__arguments) { }
     ~FuncCall() {}
     virtual llvm::Value* codeGen(CodeGenContext& context);
 };
@@ -365,28 +365,4 @@ public:
     ExprStatement(Expr* _expression) : 
         _expression(expression) { }
     virtual llvm::Value* codeGen(CodeGenContext& context);
-};
-
-class NVariableDeclaration : public Stm {
-public:
-    const NIdentifier& type;
-    NIdentifier& id;
-    Expr *assignmentExpr;
-    NVariableDeclaration(const NIdentifier& type, NIdentifier& id) :
-        type(type), id(id) { }
-    NVariableDeclaration(const NIdentifier& type, NIdentifier& id, Expr *assignmentExpr) :
-        type(type), id(id), assignmentExpr(assignmentExpr) { }
-    virtual llvm::Value* codeGen(CodeGenContext& context);
-};
-
-class NFunctionDeclaration : public Stm {
-public:
-    const NIdentifier& type;
-    const NIdentifier& id;
-    VariableList arguments;
-    NBlock* _block;
-    NFunctionDeclaration(const NIdentifier& type, const NIdentifier& id, 
-            const VariableList& arguments, NBlock* _block) :
-        type(type), id(id), arguments(arguments), _block(block) { }
-    virtual llvm::Value* codeGen(CodeGenContext& context);
-};
+};0 
