@@ -1,251 +1,371 @@
 #include <iostream>
 #include <vector>
 #include <llvm/Value.h>
-#include "debug.h"
 
 class CodeGenContext;
-class NStatement;
-class NExpression;
+
 class NVariableDeclaration;
 
-typedef std::vector<Declaration*> Decls;
-typedef std::vector<VarInit*> VarList;
-typedef std::vector<Case*> CaseList;
-typedef std::vector<Stmt*>StmtList; 
-typedef std::vector<Arg*> ArgList;
+class Node;
+    class Root;
+    class Decl;
+        class FuncDecl;
+            //FuncBody 直接用Stms
+            class Arg;
+        class VarDecl;
+            class VarInit;
+            
+    class VarType;
+        class PtrType;
+        class ArrayType;
+
+    class Stm;
+		class IfStm;
+		class ForStm;
+		class WhileStm;
+		class DoStm;
+		class SwitchStm;
+			class CaseStm;
+		class BreakStm;
+		class ContinueStm;
+		class ReturnStm;
+		class Block;
+        class ExprStm;
+
+    class Expr;
+        class SOP;
+        class BINOP;
+        class ID;
+        class Constant;
+            class Int;
+            class Float;
+            class Char;
+        class FuncCall;
+        class ArrayCall;
+
+typedef std::vector<Stm*> Stms;
+typedef std::vector<Decl*> Decls;
 typedef std::vector<Expr*> ExprList;
+typedef std::vector<CaseStm*> Cases;
+typedef std::vector<VarInit*> VarList;
+typedef std::vector<Arg*> Args;
 
-enum Type {
-    IND,CAHR,FLOAT,VOID 
+// yjj那份expr那些nodes代码重复率太高了，这里用一个OP做参数来替代了
+enum BOP {  // bi-op
+    plus = 1, sub, mult, div, mod, shl, shr, lt, le, eq, ge, gt,
+    ne, eq, addeq, subeq, diveq, muleq, modeq, shleq, shreq,
+    and, band, or, bor
 };
 
-enum Op{
-    PLUS,SUB ,MULT,DIV ,MOD ,SHL ,SHR ,LT  ,LE  ,EQ  ,
-    GE  ,GT  ,NE  ,EQ  ,ADDE,SUBE,DIVE,MULE,MODE,SHLE,
-    SHRE,AND ,BAND,OR  ,BOR ,pr  ,DOT ,ARROW
+enum SOP {  // single operation
+    splus = 1, ssub,  not, smult, sbnot
 };
 
-enum ValT{
-    int_,char_,float_
-}
+enum type {
+    void_type = 0, char_type, float_type, int_type 
+};
 
 class Node {
-private:
-    void* l_child;
-    void* r_child;
 public:
     Node() {}
     virtual ~Node() {}
-    virtual llvm::Value* codeGen(CodeGenContext& context) { }
+    virtual llvm::Value* codeGen(CodeGenContext& context) {}
 };
 
-class Program : public Node {
-private:
-    Decls decls;
+
+
+class Root : public Node {
 public:
-    Program(Decls& decls) : decls(decls){}
-    const Decls& getDecls(){ return self.decls;}
-    void changeDecls(Decls& decls){ self.decls = decl;}
-    virtual llvm::Value* codeGen(CodeGenContext& context){ }
+    Decls* _decls;
+    Root(Decls* __d): _decls(__d) {}
+    ~Root() {}
+    virtual llvm::Value* codeGen(CodeGenContext& context);
 };
 
-class Declaration : public Node {
-private:
-    VarType vartype;
+class Decl: public Stm {
 public:
-    Declaration(VarType& vartype) : vartype(vartype){}
-    const VarType& getVarType(){ return self.vartype;}
-    void changeType(VarType& vartype){ self.vartype = vartype;}
-    virtual llvm::Value* codeGen(CodeGenContext& context){ }
+    Decl() {}
+    ~Decl() {}
+    virtual llvm::Value* codeGen(CodeGenContext& context);
 };
-class Block : public Node {
-private:
-    StmtList stmtlist;
+
+class FuncDecl: public Decl {
 public:
-    Block(StmtList& stmtlist) : stmtlist(stmtlist){}
-    const StmtList& getStmtList(){ return stmtlist;}
-    void changeStmtList(StmtList& stmtlist){self.stmtlist = stmtlist;}
-    virtual llvm::Value* codeGen(CodeGenContext& context){ }
+    VarType* _Type;
+    std::string _FuncName;
+    Args* _args;
+    Stms* _fb; 
+    FuncDecl(VarType* __Type, const std::string& __FuncName, Args* __args, Stms* __fb = NULL) :
+			_Type(__Type), _FuncName(__FuncName), _args(__args), _fb(__fb) {}
+	~FuncDecl() {}
+    llvm::Value* CodeGen(CodeGenerator& __Generator);
 };
 
-class VarDecl : public Declaration {
-private:
-    VarList varlist;
+class Arg: public Node {
 public:
-    VarDecl(VarList& varlist) : varlist(varlist) {}
-    const VarList& getVarList(){ return varlist;}
-    void changeVarList(VarList& varlist){ self.varlist = varlist;}
-    virtual llvm::Value* codeGen(CodeGenContext& context){ }
+    VarType* _Type;
+    std::string _Name;
+	Arg(VarType* __Type, const std::string& __Name = "") :
+		_VarType(__Type), _Name(__Name) {}
+	~Arg() {}
+    llvm::Value* CodeGen(CodeGenerator& __Generator);
 };
 
-class FuncDecl : public Declaration {
-private:
-    ArgList arglist;
-    FuncBody func;
-public;
-    FuncDecl(ArgList& arglist, FuncBody& func): func(func),arglist(arglist) {}
-    const ArgList& getArgList() { return arglist;}
-    const FuncBody& getFuncBody() { return func; }
-    void changeArgList(ArgList& arglist){ self.arglist = arglist;}
-    void changeFuncBody(FuncBody& func){ self.func = func; }
-    virtual llvm::Value* codeGen(CodeGenContext& context){ }
-};
-
-class FuncBody:public Block {
-
-};
-
-class VarDecl : public Declaration {
-private:
-    VarList varlist;
+class VarDecl: public Decl {
 public:
-    VarDecl(VarList& varlist) : varlist(varlist) {}
-    const VarList& getVarList(){ return varlist;}
-    void changeVarList(VarList& vatlist) {self.varlist = vatlist;}
-    virtual llvm::Value* codeGen(CodeGenContext& context){ }
+    VarType* _Type;
+    VarList* _list;
+	VarDecl(VarType* __Type, VarList* __list) :
+		_Type(__Type), _VarList(__list) {}
+	~VarDecl() {}
+    llvm::Value* CodeGen(CodeGenerator& __Generator);
 };
 
-class VarType : public Node{
-private:
-    Type type;
+class VarInit: public Node {
 public:
-    VarType(Type type) : type(type) {}
-    const Type& getType(){ return type;}
-    void changeType(Type type){ type = type; }
-    virtual llvm::Value* codeGen(CodeGenContext& context){ }
+    std::string _id;
+    Expr* _initvaL;
+
+	VarInit(const std::string& __id) :
+		_id(__id), _initvaL(NULL) {}
+	VarInit(const std::string& __id, Expr* __initvaL) :
+		_id(__id), _initvaL(__initvaL) {}
+	~VarDecl() {}
+    llvm::Value* CodeGen(CodeGenerator& __Generator);
 };
 
-class Stmt : public Node {
-private:
-    Expr expr;
+class VarType: public Node {
 public:
-    Stmt(Expr expr) : expr(expr) {}
-    const Expr& getExpr(){ return expr;}
-    void changeExpr(Expr expr){ expr = expr; }
-    virtual llvm::Value* codeGen(CodeGenContext& context){ }
+    int _type;
+
+	VarType(int __type): _type(__type) {}
+	~VarType() {}
+    llvm::Value* CodeGen(CodeGenerator& __Generator);
 };
 
-class IfStmt : public Stmt{
-private:
-    Stmt ifstmt;
-    Stmt elseifstmt;
-    int ifelse;
+
+class PtrType: public VarType {
 public:
-    IfStmt(Stmt ifstmt,Stmt elseifstmt, int ifelse) : ifstmt(ifstmt), elseifstmt(elseifstmt), ifelse(ifelse) {}
-    const Stmt& getifStmt() {return ifstmt;}
-    const Stmt& getelseStmt() {return elseifstmt;}
-    void changeIfStmt(Stmt& ifstmt){ifstmt = ifstmt;}
-    void changeElseStmt(Stmt& elseifstmt){ elseifstmt = elseifstmt;}
-    virtual llvm::Value* codeGen(CodeGenContext& context){ }
-
+    bool _ptr;
+	PtrType(int __type) :
+		VarType(__Type), _ptr(true) {}
+	~PtrType() {}
+    llvm::Value* CodeGen(CodeGenerator& __Generator);
 };
 
-class ForStmt : public Stmt{
-private:
-    Expr expr;
-    Block block;
+class ArrayType: public VarType {
 public:
-    ForStmt(Expr expr, Block block) : expr(expr), block(block) {}
-    const Expr& getExpr(){ return expr; }
-    const Block& getBlock(){ return block; }
-    void changeExpr(Expr& expr){ expr = expr;}
-    void changeBlock(Block& block){ block = block;}
-    virtual llvm::Value* codeGen(CodeGenContext& context){ }
+    int _num;
+    bool _array;
+	ArrayType(int __type, int __num) :
+		VarType(__Type), _num(__num), _array(true) {}
+	~ArrayType() {}
+    llvm::Value* CodeGen(CodeGenerator& __Generator);
 };
 
-class WhileStmt : public Stmt{
-private:
-    Expr expr;
-    Block block;
+class Stm : public Node {
 public:
-    WhileStmt(Expr& expr, Block& block) : expr(expr), block(block) {}
-    const Expr& getExpr(){ return expr; }
-    const Block& getBlock(){ return block; }
-    void changeExpr(Expr& expr){ expr = expr;}
-    void changeBlock(Block& block){ block = block;}
-    virtual llvm::Value* codeGen(CodeGenContext& context){ }
+    Stm() {}
+    ~Stm() {}
+    virtual llvm::Value* codeGen(CodeGenContext& context);
 };
 
-class DoStmt : public Stmt{
-private:
-    Expr expr;
-    Block block;
+// if-else 这里只支持一个else好了
+class IfStm : public Stm{
 public:
-    DoStmt(Expr& expr, Block& block) : expr(expr), block(block) {}
-    const Expr& getExpr(){ return expr; }
-    const Block& getBlock(){ return block; }
-    void changeExpr(Expr& expr){ expr = expr;}
-    void changeBlock(Block& block){ block = block;}
+    Expr* _switch;
+    Block* _ifStm;
+    Block* _elseifStm;
+    bool _ifelse;   // true: has else; false: no else
+    IfStm(Expr* __switch, Block* __ifStm, Block* __elseifStm, bool __ifelse) : 
+        _switch(__switch), _ifStm(__ifStm), _elseifStm(__elseifStm), _ifelse(__ifelse) {}
+    ~IfStm() {}
+    const Block* _getifStm() {return _ifStm;}
+    const Block* _getelseStm() {return _elseifStm;}
+    void changeIfStm(Block* __ifStm){_ifStm = __ifStm;}
+    void changeElseStm(Block* _elseifStm){ _elseifStm = __elseifStm;}
     virtual llvm::Value* codeGen(CodeGenContext& context){ }
+
 };
-class SwitchStmt : public Stmt{
-private:
-    Expr expr;
-    CaseList cases;
+
+class ForStm : public Stm{
 public:
-    SwitchStmt(Expr& expr, CaseList& cases): expr(expr), cases(cases) {}
-    const Expr& getExpr(){ return expr; }
-    const CaseList& getCaseList(){ return cases; }
-    void changeExpr(Expr& expr){ expr = expr;}
-    void changeCaseList(CaseList& cases){ cases = cases;}
+    Expr* _expr1, _expr2, _expr3;
+    Block* _block;
+    ForStm(Expr* __expr1, Expr* __expr2, Expr* __expr3, Block* __block) :
+        _expr1(__expr1), _expr2(__expr2), _expr3(__expr3), _block(__block) {}
+    ForStm() {}
     virtual llvm::Value* codeGen(CodeGenContext& context){ }
 };
 
-class CaseStmt : public Stmt{
-private:
-    StmtList stmts;
+class WhileStm : public Stm{
 public:
-    CaseStmt(StmtList stmts) : stmts(stmts) {}
-    const StmtList& getStmts(){ return stmts;}
-    void changeStmtList(StmtList& stmts){ stmts = stmts; }
+    Expr* _expr;
+    Block* _block;
+    WhileStm(Expr* __expr, Block* __block) : _expr(__expr), _block(__block) {}
+    ~WhileStm() {}
     virtual llvm::Value* codeGen(CodeGenContext& context){ }
 };
 
-class BreakStmt : public Stmt{
-private:
-    
-};
-
-class ContinueStmt : public Stmt{
-
-};
-
-class ReturnStmt : public Stmt{
-
-};
-
-
-class Expr : public Node{
-private:
-    Expr& l_child;
-    Expr& r_child;
-    Op op;
+class DoStm : public Stm{
 public:
-    Expr(Expr& l_child, Expr& r_child, Op op): l_child(l_child), r_child(r_child), op(op) {}
-    const Expr& getLChild(){ return l_child;}
-    const Expr& getRChild(){ return r_child;}
-    void changeLChild(Expr& l_child){l_child = l_child;}
-    void changeRChild(Expr& r_child){r_child = r_child;}
+    Expr* _expr;
+    Block* _block;
+    DoStm(Expr* __expr, Block* __block) : _expr(__expr), _block(__block) {}
+    DoStm() {}
+    const Expr* getExpr(){ return _expr; }
+    const Block* getBlock(){ return _block; }
+    void changeExpr(Expr* __expr){ _expr = __expr;}
+    void changeBlock(Block* __block){ _block = __block;}
     virtual llvm::Value* codeGen(CodeGenContext& context){ }
-
 };
 
-union Val{
-        char cval;
-        int ival;
-        double dval;
-    };
-
-class Constant : public Node{
-private:
-    Val val;
-    ValT valt;
+class SwitchStm : public Stm{
 public:
-    Constant (Val val,ValT valt) : val(val), valt(valt) {}
-    const Val& getVal() {return val}
-    const ValT& getValT() {return valt;}
-    void changeVal(const Val& val) { val = val; }
-    void changeValT(const ValT& valt) { valt = valt;}
+    Expr* _expr;
+    Cases* _cases;
+    SwitchStm(Expr* __expr, Cases* __cases): _expr(__expr), _cases(__cases) {}
+    SwitchStm() {}
+    const Expr* getExpr(){ return _expr; }
+    const Cases* getCaseList(){ return _cases; }
+    void changeExpr(Expr* __expr){ _expr = __expr;}
+    void changeCaseList(Cases* __cases){ _cases = __cases;}
     virtual llvm::Value* codeGen(CodeGenContext& context){ }
+};
 
+class CaseStm : public Stm{
+public:
+    Expr* _expr;
+    Stms* _stms;
+    CaseStm(Stm* __stms) : _stms(__stms) {}
+    const Stms* getStms(){ return _stms;}
+    void changeStmList(Stms* __stms){ _stms = __stms; }
+    virtual llvm::Value* codeGen(CodeGenContext& context){ }
+};
+
+class BreakStm : public Stm{
+public:
+    BreakStm(){}
+    ~BreakStm(){}
+    virtual llvm::Value* codeGen(CodeGenContext& context){ }
+};
+
+class ContinueStm : public Stm{
+public:
+    ContinueStm(){}
+    ~ContinueStm(){}
+    virtual llvm::Value* codeGen(CodeGenContext& context){ }
+};
+
+class ReturnStm : public Stm{
+public:
+    Expr* _return;
+    ReturnStm(Expr* __return): _return(__return) {}
+    ~ReturnStm(){}
+    virtual llvm::Value* codeGen(CodeGenContext& context){ }
+};
+
+class ExprStm : public Stm{
+public:
+    Expr* _expr;
+    ExprStm(Expr* __expr): _expr(__expr) {}
+    ~ExprStm(){}
+    virtual llvm::Value* codeGen(CodeGenContext& context){ }
+};
+
+class Block : public Expr {
+public:
+    Stms _statements;
+    Block(Stm* __s): _statements(__s) { }
+    ~Block() {}
+    virtual llvm::Value* codeGen(CodeGenContext& context);
+};
+
+class Expr : public Node {
+public:
+    Expr() {}
+    ~Expr() {}
+    virtual llvm::Value* codeGen(CodeGenContext& context);
+};
+
+class SOP : public Expr {
+public:
+    int op;
+    Expr* lhs;
+    SOP(Expr* lhs, int op) :
+        lhs(lhs), op(op) { }
+    ~SOP() {}
+    virtual llvm::Value* codeGen(CodeGenContext& context);
+};
+
+class BINOP : public Expr {
+public:
+    int op;
+    Expr* lhs;
+    Expr* rhs;
+    BINOP(Expr* lhs, int op, Expr* rhs) :
+        lhs(lhs), rhs(rhs), op(op) { }
+    ~BINOP() {}
+    virtual llvm::Value* codeGen(CodeGenContext& context);
+};
+
+class ID : public Expr {
+public:
+    std::string _name;
+    ID(const std::string& __name) : _name(__name) { }
+    ~ID() {}
+    virtual llvm::Value* codeGen(CodeGenContext& context);
+};
+
+class Constant : public Expr {
+public:
+    int _type;
+    Constant(int __type) : type(__type) { }
+    ~Constant() {}
+    virtual llvm::Value* codeGen(CodeGenContext& context);
+};
+
+class Int : public Constant {
+public:
+    long long _value;
+    Int(long long __value, int __type = int_type) : Constant(__type), _value(__value) { }
+    ~Int() {}
+    virtual llvm::Value* codeGen(CodeGenContext& context);
+};
+
+class Float : public Constant {
+public:
+    double _value;
+    Float(double __value, int __type = float_type) : Constant(__type), _value(__value) { }
+    ~Float() {}
+    virtual llvm::Value* codeGen(CodeGenContext& context);
+};
+
+class Char : public Constant {
+public:
+    char _value;
+    Char(char __value, int __type = char_type) : Constant(__type), _value(__value) { }
+    ~Char() {}
+    virtual llvm::Value* codeGen(CodeGenContext& context);
+};
+
+// 这里记得要检验一下参数数量对不对
+class FuncCall : public Expr {
+public:
+    std::string _FuncName;
+    ExprList* _arguments;
+    FuncCall(std::string __FuncName, ExprList* __arguments) :
+        _FuncName(__FuncName), _arguments(__arguments) { }
+    ~FuncCall() {}
+    virtual llvm::Value* codeGen(CodeGenContext& context);
+};
+
+class ArrayCall : public Expr {
+public:
+    std::string _id;
+    Expr* _num;
+    ArrayCall(const std::string& __id, Expr* __num) : 
+        _id(__id), _num(__num) {}
+    ~ArrayCall() {}
+    virtual llvm::Value* codeGen(CodeGenContext& context);
 };

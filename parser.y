@@ -3,6 +3,14 @@
 #include <string>
 #include <iostream>
 
+int type2int(std::string type)
+{
+    if(type == "void") return void_type;
+    else if(type == "char") return char_type;
+    else if(type == "float") return float_type;
+    else if(type == "int") return int_type;
+    else return -1;
+}
 
 void yyerror(const char *s) {
     std::printf("Error: %s\n", s);
@@ -11,7 +19,7 @@ void yyerror(const char *s) {
 
 int yylex();
 
-node::Program *Root;
+node::Root *root;
 %}
 
 %output "Parser.cpp"
@@ -22,36 +30,33 @@ node::Program *Root;
     std::string *type;
     float fval;
     char cval;
-    std::string *strVal;
 
-    node::Program *program;
-    node::Declaration *decl;
+    node::Root *root;
+    node::Decl *decl;
     node::Decls *decls; 
     node::FuncDecl *funcDecl;
-    node::FuncBody *funcBody;
     node::VarDecl *varDecl;
     node::VarType *varType;
-    node::Stmt *stmt;
-    node::IfStmt *ifStmt;
-    node::ForStmt *forStmt;
-    node::WhileStmt *whileStmt;
-    node::DoStmt *doStmt;
-    node::SwitchStmt *switchStmt;
-    node::CaseList *caseList;
-    node::CaseStmt *caseStmt;
-    node::BreakStmt* breakStmt;
-	node::ContinueStmt* continueStmt;
-    node::ReturnStmt *returnStmt;
-    node::Stmts *stmts;
+    node::Stm *stmt;
+    node::IfStm *ifStm;
+    node::ForStm *forStm;
+    node::WhileStm *whileStm;
+    node::DoStm *doStm;
+    node::SwitchStm *switchStm;
+    node::Cases *cases;
+    node::CaseStm *caseStm;
+    node::BreakStm* breakStm;
+	node::ContinueStm* continueStm;
+    node::ReturnStm *returnStm;
+    node::Stms *stmts;
     node::Block *block;
     node::Arg *arg;
-    node::ArgList *argList;
+    node::Args *args;
     node::VarInit *varInit;
     node::VarList *varList;
     node::Expr *expr;
     node::Constant* constant;
 	node::ExprList* exprList;
-
 }
 
 %token  LP RP LC RC RB LB
@@ -75,25 +80,25 @@ node::Program *Root;
 %type<funcBody>							FuncBody
 %type<varDecl>							VarDecl	
 %type<varType>							VarType 	
-%type<stmt>								Stm
-%type<ifStmt>							IfStm
-%type<forStmt>							ForStm
-%type<whileStmt>						WhileStm
-%type<doStmt>							DoStm
-%type<switchStmt>						SwitchStm
+%type<stm>								Stm
+%type<ifStm>							IfStm
+%type<forStm>							ForStm
+%type<whileStm>						    WhileStm
+%type<doStm>							DoStm
+%type<switchStm>						SwitchStm
 %type<cases>							Cases
-%type<caseStmt>							CaseStm
-%type<breakStmt>						BreakStm
-%type<continueStmt>						ContinueStm
-%type<returnStmt>						ReturnStm
-%type<stmts>							Stms
+%type<caseStm>							CaseStm
+%type<breakStm>						    BreakStm
+%type<continueStm>						ContinueStm
+%type<returnStm>						ReturnStm
+%type<stms>							    Stms
 %type<block>							Block
 %type<arg>								Arg
-%type<argList>							Args
+%type<args>							    Args
 %type<varInit>							VarInit	
 %type<varList>							VarList 
 %type<expr>								Expr	
-%type<constant>							Const
+%type<constant>							Constant
 %type<exprList>							ExprList _ExprList
 
 %nonassoc IF
@@ -130,24 +135,24 @@ Decl:       VarDecl     { $$ = $1; }
 VarDecl:    VarType VarList SEMI    { $$ = new node::VarDecl($1, $2); }
             ;
 
-FuncDecl:   VarType ID LP Args RP SEMI
-            | VarType ID LP Args RP FuncBody
+FuncDecl:   VarType ID LP Args RP SEMI          { $$ = new node::FuncDecl($1, *$2, $4); }
+            | VarType ID LP Args RP FuncBody    { $$ = new node::FuncDecl($1, *$2, $4, $6); }
             ;
 
-FuncBody:	LC Stms RC
+FuncBody:	LC Stms RC              { $$ = $2;} 
             ;
 
 VarList:    VarList COMMA VarInit   { $$ = $1; $$->push_back($3); }
            | VarInit                { $$ = new node::VarList(); $$->push_back($1); }
            ;
      
-VarInit:    ID              { }
-            | ID EQU Expr
+VarInit:    ID              { $$ = new node::VarInit(*$1); }
+            | ID EQU Expr   { $$ = new node::VarInit(*$1, $3); }
             ;
 
-VarType:    TYPE
-            | TYPE PTR
-            | TYPE ARRAY LB INT RB
+VarType:    TYPE                    { $$ = new node::VarType(type2int(*$1)); }
+            | TYPE PTR              { $$ = new node::PtrType(type2int(*$1)); }
+            | TYPE ARRAY LB INT RB  { $$ = new node::ArrayType(type2int(*$1), $4); }
             ;
 
 
@@ -203,7 +208,7 @@ Expr:         Expr PLUS Expr            { $$ = new node::BINOP($1, plus, $2); }
             | NOT Expr              { $$ = new node::SOP($2, not); }
             | MULT Expr %prec NOT   { $$ = new node::SOP($2, smult); }
             | BNOT Expr %prec NOT   { $$ = new node::SOP($2, sbnot); }
-            | Const             { $$ = $1; }
+            | Constant             { $$ = $1; }
             | ID                { $$ = new node::ID(*$1); }
             | ID LB Expr RB     { $$ = new node::ArrayCall(*$1, $3); }
             | ID LP ExprList RP { $$ = new node::FuncCall(*$1, $3); }
@@ -218,7 +223,7 @@ _ExprList:	_ExprList COMMA Expr 									{  $$ = $1; $$->push_back($3);   }
 			| Expr %prec FUNC_CALL_ARG_LIST							{  $$ = new node::ExprList(); $$->push_back($1);   }
 			;
  
-Const:      INT             { $$ = new node::Int($1); }
+Constant:   INT             { $$ = new node::Int($1); }
             | CHAR          { $$ = new node::Char($1); }
             | FLOAT         { $$ = new node::Float($1); }
             ; 
