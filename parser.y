@@ -80,25 +80,16 @@ node::Root *root;
 %type<funcBody>							FuncBody
 %type<varDecl>							VarDecl	
 %type<varType>							VarType 	
-%type<stm>								Stm
-%type<ifStm>							IfStm
-%type<forStm>							ForStm
-%type<whileStm>						    WhileStm
-%type<doStm>							DoStm
-%type<switchStm>						SwitchStm
+%type<stm>								Stm IfStm ForStm WhileStm DoStm SwitchStm CaseStm BreakStm ContinueStm ReturnStm
 %type<cases>							Cases
-%type<caseStm>							CaseStm
-%type<breakStm>						    BreakStm
-%type<continueStm>						ContinueStm
-%type<returnStm>						ReturnStm
 %type<stms>							    Stms
 %type<block>							Block
 %type<arg>								Arg
 %type<args>							    Args
 %type<varInit>							VarInit	
 %type<varList>							VarList 
-%type<expr>								Expr	
-%type<constant>							Constant
+%type<expr>								Expr Constant	
+%type<constant>							
 %type<exprList>							ExprList _ExprList
 
 %nonassoc IF
@@ -190,7 +181,7 @@ Expr:         Expr PLUS Expr            { $$ = new node::BINOP($1, plus, $3); }
             | Expr GE Expr      { $$ = new node::BINOP($1, ge, $3); }
             | Expr GT Expr      { $$ = new node::BINOP($1, gt, $3); }
             | Expr NE Expr      { $$ = new node::BINOP($1, ne, $3); }
-            | Expr EQ Expr      { $$ = new node::BINOP($1, eq, $3); }
+            | Expr EQU Expr      { $$ = new node::BINOP($1, equ, $3); }
             | Expr ADDEQ Expr       { $$ = new node::BINOP($1, addeq, $3); }
             | Expr SUBEQ Expr       { $$ = new node::BINOP($1, subeq, $3); }
             | Expr DIVEQ Expr       { $$ = new node::BINOP($1, diveq, $3); }
@@ -228,7 +219,7 @@ Constant:   INT             { $$ = new node::Int($1); }
             | FLOAT         { $$ = new node::Float($1); }
             ; 
 
-ReturnStm:  RETURN Expr SEMI    { $$ = new node::ReturnStm($2); }
+ReturnStm:  RETURN Expr SEMI    { $<Stm>$ = new node::ReturnStm($2); }
             RETURN SEMI         { $$ = new node::ReturnStm(NULL); }
             ;
 

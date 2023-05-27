@@ -53,7 +53,7 @@ typedef std::vector<Arg*> Args;
 // yjj那份expr那些nodes代码重复率太高了，这里用一个OP做参数来替代了
 enum BOP {  // bi-op
     plus = 1, sub, mult, div, mod, shl, shr, lt, le, eq, ge, gt,
-    ne, eq, addeq, subeq, diveq, muleq, modeq, shleq, shreq,
+    ne, equ, addeq, subeq, diveq, muleq, modeq, shleq, shreq,
     and, band, or, bor
 };
 
