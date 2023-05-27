@@ -231,7 +231,7 @@ ReturnStm:  RETURN Expr SEMI
 IfStm:      IF LP Expr RP Block ELSE Block
             | IF LP Expr RP Block
             ;
-ForStm:     FOR LP Expr RP Block
+ForStm:     FOR LP Expr SEMI Expr SEMI Expr RP Block
 
 WhileStm:   WHILE LP Expr RP Block
             ;
