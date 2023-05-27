@@ -60,6 +60,7 @@
 "return"    { return RETURN; }
 "if"        { return IF; }
 "else"      { return ELSE; }
+"do"        { return DO; }
 "while"     { return WHILE; }
 "for"       { return FOR; }
 "break"     { return BREAK; }

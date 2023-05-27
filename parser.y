@@ -64,8 +64,8 @@ node::Root *root;
         LT EQ GT GE LE NE 
         EQU ADDEQ SUBEQ MULEQ DIVEQ MODEQ SHLEQ SHREQ
         NOT BNOT AND BAND OR BOR
-        RETURN IF WHILE ELSE FOR BREAK SWITCH CASE DEFAULT CONTINUE
-        PTR SEMI COMMA TYPE ARRAY COLON
+        RETURN IF WHILE ELSE FOR BREAK SWITCH CASE DEFAULT CONTINUE DO
+        PTR SEMI COMMA ARRAY COLON
            	
 %token<ival> INT
 %token<sval> ID 
@@ -177,31 +177,31 @@ Stm:        Expr SEMI           { $$ = new node::ExprStm($1); }
 Block:      LC Stms RC    { $$ new node::Block($2); }    
             ;
 
-Expr:         Expr PLUS Expr            { $$ = new node::BINOP($1, plus, $2); }
-            | Expr SUB Expr     { $$ = new node::BINOP($1, sub, $2); }
-            | Expr MULT Expr        { $$ = new node::BINOP($1, mult, $2); }
-            | Expr DIV Expr     { $$ = new node::BINOP($1, div, $2); }
-            | Expr MOD Expr     { $$ = new node::BINOP($1, mod, $2); }
-            | Expr SHL Expr     { $$ = new node::BINOP($1, shl, $2); }
-            | Expr SHR Expr         { $$ = new node::BINOP($1, shr, $2); }
-            | Expr LT Expr      { $$ = new node::BINOP($1, lt, $2); }
-            | Expr LE Expr      { $$ = new node::BINOP($1, le, $2); }
-            | Expr EQ Expr      { $$ = new node::BINOP($1, eq, $2); }
-            | Expr GE Expr      { $$ = new node::BINOP($1, ge, $2); }
-            | Expr GT Expr      { $$ = new node::BINOP($1, gt, $2); }
-            | Expr NE Expr      { $$ = new node::BINOP($1, ne, $2); }
-            | Expr EQ Expr      { $$ = new node::BINOP($1, eq, $2); }
-            | Expr ADDEQ Expr       { $$ = new node::BINOP($1, addeq, $2); }
-            | Expr SUBEQ Expr       { $$ = new node::BINOP($1, subeq, $2); }
-            | Expr DIVEQ Expr       { $$ = new node::BINOP($1, diveq, $2); }
-            | Expr MULEQ Expr       { $$ = new node::BINOP($1, muleq, $2); }
-            | Expr MODEQ Expr       { $$ = new node::BINOP($1, modeq, $2); }
-            | Expr SHLEQ Expr       { $$ = new node::BINOP($1, shleq, $2); }
-            | Expr SHREQ Expr       { $$ = new node::BINOP($1, shreq, $2); }
-            | Expr AND Expr     { $$ = new node::BINOP($1, and, $2); }
-            | Expr BAND Expr        { $$ = new node::BINOP($1, band, $2); }
-            | Expr OR Expr      { $$ = new node::BINOP($1, or, $2); }
-            | Expr BOR Expr     { $$ = new node::BINOP($1, bor, $2); }
+Expr:         Expr PLUS Expr            { $$ = new node::BINOP($1, plus, $3); }
+            | Expr SUB Expr     { $$ = new node::BINOP($1, sub, $3); }
+            | Expr MULT Expr        { $$ = new node::BINOP($1, mult, $3); }
+            | Expr DIV Expr     { $$ = new node::BINOP($1, div, $3); }
+            | Expr MOD Expr     { $$ = new node::BINOP($1, mod, $3); }
+            | Expr SHL Expr     { $$ = new node::BINOP($1, shl, $3); }
+            | Expr SHR Expr         { $$ = new node::BINOP($1, shr, $3); }
+            | Expr LT Expr      { $$ = new node::BINOP($1, lt, $3); }
+            | Expr LE Expr      { $$ = new node::BINOP($1, le, $3); }
+            | Expr EQ Expr      { $$ = new node::BINOP($1, eq, $3); }
+            | Expr GE Expr      { $$ = new node::BINOP($1, ge, $3); }
+            | Expr GT Expr      { $$ = new node::BINOP($1, gt, $3); }
+            | Expr NE Expr      { $$ = new node::BINOP($1, ne, $3); }
+            | Expr EQ Expr      { $$ = new node::BINOP($1, eq, $3); }
+            | Expr ADDEQ Expr       { $$ = new node::BINOP($1, addeq, $3); }
+            | Expr SUBEQ Expr       { $$ = new node::BINOP($1, subeq, $3); }
+            | Expr DIVEQ Expr       { $$ = new node::BINOP($1, diveq, $3); }
+            | Expr MULEQ Expr       { $$ = new node::BINOP($1, muleq, $3); }
+            | Expr MODEQ Expr       { $$ = new node::BINOP($1, modeq, $3); }
+            | Expr SHLEQ Expr       { $$ = new node::BINOP($1, shleq, $3); }
+            | Expr SHREQ Expr       { $$ = new node::BINOP($1, shreq, $3); }
+            | Expr AND Expr     { $$ = new node::BINOP($1, and, $3); }
+            | Expr BAND Expr        { $$ = new node::BINOP($1, band, $3); }
+            | Expr OR Expr      { $$ = new node::BINOP($1, or, $3); }
+            | Expr BOR Expr     { $$ = new node::BINOP($1, bor, $3); }
             | LP Expr RP        { $$ = $2; }
             | PLUS Expr %prec NOT   { $$ = new node::SOP($2, splus); }
             | SUB Expr  %prec NOT   { $$ = new node::SOP($2, ssub); }
