@@ -289,7 +289,7 @@ typedef std::vector<Arg*> Args;
 
 ### lex部分的测试
 
-我们在每个token后面增加一行代码，使其打印出对应的token内容，输入文件`test.txt`并打印出结果。
+我们在每个token后面增加一行代码(比如`"(" { cout << "lp " << endl;}`)，使其打印出对应的token内容，输入文件`test.txt`并打印出结果。
 `test.txt`为如下代码
 ```c++
 // abc
