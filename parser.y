@@ -54,6 +54,27 @@
 %token<dval> FLOAT
 %token<cval> CHAR
 
+%type<root>							    Root	
+%type<decl>								Decl	
+%type<decls>							Decls	
+%type<funcDecl>							FuncDecl
+%type<funcBody>							FuncBody
+%type<varDecl>							VarDecl	
+%type<varType>							VarType 	
+%type<stm>								Stm IfStm ForStm WhileStm DoStm SwitchStm CaseStm BreakStm ContinueStm ReturnStm
+%type<cases>							Cases
+%type<stms>							    Stms
+%type<block>							Block
+%type<arg>								Arg
+%type<args>							    Args
+%type<varInit>							VarInit	
+%type<varList>							VarList 
+%type<expr>								Expr Constant	
+%type<exprList>							ExprList _ExprList
+
+%nonassoc IF
+%nonassoc ELSE
+
 %left   COMMA
 %left   ARGLIST
 %right  EQU ADDEQ SUBEQ MULEQ DIVEQ MODEQ SHLEQ SHREQ
