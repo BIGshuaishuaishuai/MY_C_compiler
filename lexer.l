@@ -79,6 +79,6 @@
 [0-9]+                      { yylval.ival = atoi(yytext); return INT; } 
 [A-Za-z_][0-9A-Za-z_]*      { yylval.sval = new std::string(yytext, yyleng); return ID; }
 [0-9]+\.[0-9]+              { yylval.fval = atof(yytext); return FLOAT; }
-\'.\'                       { yylval.cval = yytext[1]; return CHAR; }
+"\'"."\'"                   { yylval.cval = yytext[1]; return CHAR; }
 .       { printf("Lex Error at Line %d: Illegal lex %s.\n", yylineno, yytext); }
 %%
