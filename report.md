@@ -58,7 +58,7 @@
 
 ### 成员分工
 
-朱靖彦：
+朱靖彦：完成了lexer，parser和ast部分
 
 郑昊伦：
 
@@ -160,6 +160,126 @@ lex提供了一些用于辅助解析词法的变量和函数，常用的有：
 其中有关变量类型的定义，我们用含有语义值的token(TYPE)表示一个变量类型的token，并将其语义值以string的形式传递到parser阶段具体分析其类型。
 
 ## 四、语法分析及抽象语法树的构建
+
+这部分的作用是，检验程序的语法结构，并且生成抽象语法树提交到下一环节。本环节我们使用了Yacc(Bison)来解析语法。Yacc是一种语法生成器，它将带注释的CFG转换为LALR（1）表，对输入的token进行语法解析。Bison是Yacc的GNU版本。
+
+Yacc的语法结构和lex类似，同样是三段式，用`%%`分割
+
+```yacc
+definition
+%%
+rules
+%%
+user's code
+```
+
+在Yacc的定义部分，我们需要导入使用的库文件，并且举出需要用到的终结符和非终结符，以及一些优先级的说明。`%token xx`标记该类型为token，`%left`和`%right`用于解决规约-规约冲突，同时表示左结合/右结合性质，后定义的优先级更高。`%type<xx> xxx`则用于定义非终结符。
+
+由于C语言程序代码最外层都是定义和声明，所以我们设计的语法规则从Root出发，首先将代码分为一组组函数/变量定义和声明，然后再在具体的函数内部解析各个语句。基本的规则如下（由于Expression和Statement中的规约重复度高，而且比较简单，所以这里略去了一部分，只展示了CFG最基本的结构）。
+
+```yacc
+Root:       Decls       { $$ = new node::Root(*$1); }
+            ;
+
+Decls:      Decls Decl  { $1->push_back($2);    $$ = $1; }
+            |           { $$ = new node::Decls(); }
+            ;
+
+Decl:       VarDecl     { $$ = $1; }
+            | FuncDecl  { $$ = $1; }
+            ;
+
+VarDecl:    VarType VarList SEMI    { $$ = new node::VarDecl($1, $2); }
+            ;
+
+VarList:    VarList COMMA VarInit   { $$ = $1; $$->push_back($3); }
+           | VarInit                { $$ = new node::VarList(); $$->push_back($1); }
+           ;
+     
+VarInit:    ID              { $$ = new node::VarInit(*$1); }
+            | ID EQU Expr   { $$ = new node::VarInit(*$1, $3); }
+            ;
+
+VarType:    TYPE                    { $$ = new node::VarType(type2int(*$1)); }
+            | TYPE PTR              { $$ = new node::PtrType(type2int(*$1)); }
+            | TYPE ARRAY LB INT RB  { $$ = new node::ArrayType(type2int(*$1), $4); }
+            ;
+
+FuncDecl:   VarType ID LP Args RP SEMI          { $$ = new node::FuncDecl($1, *$2, $4); }
+            | VarType ID LP Args RP FuncBody    { $$ = new node::FuncDecl($1, *$2, $4, $6); }
+            ;
+
+FuncBody:	LC Stms RC              { $$ = $2;} 
+            ;
+
+Args:       Args COMMA Arg  { $$ = $1; $$->push_back($3); }
+            |               { $$ = new node::Args(); }
+            ;
+
+Arg:        VarType ID      { $$ = new node::Args($1, *$2); }
+            | VarType       { $$ = new node::Args($1); }
+            ;  
+
+Stms:       Stms Stm        { $$ = $1; $$->push_back($2); }
+            |               { $$ = new node::Stms(); }
+            ;
+            
+Stm:        ...;           
+
+Expr:       ...;
+
+```
+
+在每一条规约的`{}`包含着用到该规约时产生的额外效果，这里我们需要通过这些额外效果构建抽象语法树。下面将介绍抽象语法树的数据结构，定义在`node.hpp`中。
+
+```c++
+class Node;
+    class Root;
+            
+    class VarType;
+        class PtrType;
+        class ArrayType;
+
+    class Stm;
+        class Decl;
+            class FuncDecl;
+                class Arg;
+            class VarDecl;
+                class VarInit;
+		class IfStm;
+		class ForStm;
+		class WhileStm;
+		class DoStm;
+		class SwitchStm;
+			class CaseStm;
+		class BreakStm;
+		class ContinueStm;
+		class ReturnStm;
+		class Block;
+        class ExprStm;
+
+    class Expr;
+        class SOP;
+        class BINOP;
+        class ID;
+        class Constant;
+            class Int;
+            class Float;
+            class Char;
+        class FuncCall;
+        class ArrayCall;
+
+typedef std::vector<Stm*> Stms;
+typedef std::vector<Decl*> Decls;
+typedef std::vector<Expr*> ExprList;
+typedef std::vector<CaseStm*> Cases;
+typedef std::vector<VarInit*> VarList;
+typedef std::vector<Arg*> Args;
+```
+
+上面代码定义的类构成了语法树的基本单元，其中的缩进表示类的继承关系（除了`Arg`和`VarInit`，这两个类是上一级类的子组分）。
+
+在yacc解析语法进行规约时，每用到一次规约，都会调用`node.hpp`中对应的构造函数，构造一个继承于`node`的对象。该对象可能会有一些子节点，在调用构造函数时一同传入。由于LR文法是一种自底向上的文法，所以子节点总是能先构造完成。最后得到Root结点就可以完成整棵抽象语法树。
 
 ## 五、语义分析
 
