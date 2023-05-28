@@ -89,7 +89,6 @@ node::Root *root;
 %type<varInit>							VarInit	
 %type<varList>							VarList 
 %type<expr>								Expr Constant	
-%type<constant>							
 %type<exprList>							ExprList _ExprList
 
 %nonassoc IF
