@@ -1,25 +1,22 @@
 %{
-#include "node.hpp" 
-#include <string>
-#include <iostream>
+    #include <iostream>
+    #include "node.hpp" 
 
-int type2int(std::string type)
-{
-    if(type == "void") return void_type;
-    else if(type == "char") return char_type;
-    else if(type == "float") return float_type;
-    else if(type == "int") return int_type;
-    else return -1;
-}
+    int type2int(std::string type)
+    {
+        if(type == "void") return void_type;
+        else if(type == "char") return char_type;
+        else if(type == "float") return float_type;
+        else if(type == "int") return int_type;
+        else return -1;
+    }
 
-void yyerror(const char *s) {
-    std::printf("Error: %s\n", s);
-    std::exit(1); 
-}
-
-int yylex();
-
-node::Root *root;
+    void yyerror(const char *s) {
+        std::printf("Error: %s\n", s);
+        std::exit(1); 
+    }
+    int yylex();
+    node::Root *root;
 %}
 
 %output "Parser.cpp"
@@ -30,73 +27,35 @@ node::Root *root;
     std::string *type;
     float fval;
     char cval;
-
     node::Root *root;
     node::Decl *decl;
     node::Decls *decls; 
-    node::FuncDecl *funcDecl;
-    node::VarDecl *varDecl;
     node::VarType *varType;
-    node::Stm *stmt;
-    node::IfStm *ifStm;
-    node::ForStm *forStm;
-    node::WhileStm *whileStm;
-    node::DoStm *doStm;
-    node::SwitchStm *switchStm;
-    node::Cases *cases;
-    node::CaseStm *caseStm;
-    node::BreakStm* breakStm;
-	node::ContinueStm* continueStm;
-    node::ReturnStm *returnStm;
-    node::Stms *stmts;
-    node::Block *block;
+    node::Stm *stm;
+    node::Stms *stms;
     node::Arg *arg;
     node::Args *args;
     node::VarInit *varInit;
     node::VarList *varList;
     node::Expr *expr;
-    node::Constant* constant;
 	node::ExprList* exprList;
 }
 
 %token  LP RP LC RC RB LB
-        PLUS SUB MULT DIV MOD SHL SHR
-        LT EQ GT GE LE NE 
-        EQU ADDEQ SUBEQ MULEQ DIVEQ MODEQ SHLEQ SHREQ
-        NOT BNOT AND BAND OR BOR
-        RETURN IF WHILE ELSE FOR BREAK SWITCH CASE DEFAULT CONTINUE DO
-        PTR SEMI COMMA ARRAY COLON
-           	
+%token  PLUS SUB MULT DIV MOD SHL SHR
+%token  LT EQ GT GE LE NE 
+%token  EQU ADDEQ SUBEQ MULEQ DIVEQ MODEQ SHLEQ SHREQ
+%token  NOT BNOT AND BAND OR BOR
+%token  RETURN IF WHILE ELSE FOR BREAK SWITCH CASE DEFAULT CONTINUE DO
+%token  PTR SEMI COMMA ARRAY COLON           	
 %token<ival> INT
 %token<sval> ID 
 %token<type> TYPE
 %token<dval> FLOAT
 %token<cval> CHAR
 
-%type<root>							    Root	
-%type<decl>								Decl	
-%type<decls>							Decls	
-%type<funcDecl>							FuncDecl
-%type<funcBody>							FuncBody
-%type<varDecl>							VarDecl	
-%type<varType>							VarType 	
-%type<stm>								Stm IfStm ForStm WhileStm DoStm SwitchStm CaseStm BreakStm ContinueStm ReturnStm
-%type<cases>							Cases
-%type<stms>							    Stms
-%type<block>							Block
-%type<arg>								Arg
-%type<args>							    Args
-%type<varInit>							VarInit	
-%type<varList>							VarList 
-%type<expr>								Expr Constant	
-%type<constant>							
-%type<exprList>							ExprList _ExprList
-
-%nonassoc IF
-%nonassoc ELSE
-
 %left   COMMA
-%left   FUNC_CALL_ARG_LIST
+%left   ARGLIST
 %right  EQU ADDEQ SUBEQ MULEQ DIVEQ MODEQ SHLEQ SHREQ
 %left	OR
 %left	AND
@@ -109,7 +68,25 @@ node::Root *root;
 %left   MULT DIV MOD
 %right  BNOT NOT
 
+%type<root>							    Root	
+%type<decl>								Decl FuncDecl VarDecl		
+%type<decls>							Decls	
+%type<stm>								Stm IfStm ForStm WhileStm DoStm SwitchStm CaseStm BreakStm ContinueStm ReturnStm
+%type<stms>							    Stms FuncBody
+%type<arg>								Arg
+%type<args>							    Args
+%type<varInit>							VarInit	
+%type<varList>							VarList 
+%type<expr>								Expr Constant Block
+%type<exprList>							ExprList _ExprList
+%type<cases>							Cases
+%type<varType>							VarType 	
+
+%nonassoc IF
+%nonassoc ELSE
+
 %start Root
+
 %%
 
 Root:       Decls { $$ = new node::Root(*$1); }
@@ -126,13 +103,6 @@ Decl:       VarDecl     { $$ = $1; }
 VarDecl:    VarType VarList SEMI    { $$ = new node::VarDecl($1, $2); }
             ;
 
-FuncDecl:   VarType ID LP Args RP SEMI          { $$ = new node::FuncDecl($1, *$2, $4); }
-            | VarType ID LP Args RP FuncBody    { $$ = new node::FuncDecl($1, *$2, $4, $6); }
-            ;
-
-FuncBody:	LC Stms RC              { $$ = $2;} 
-            ;
-
 VarList:    VarList COMMA VarInit   { $$ = $1; $$->push_back($3); }
            | VarInit                { $$ = new node::VarList(); $$->push_back($1); }
            ;
@@ -146,6 +116,20 @@ VarType:    TYPE                    { $$ = new node::VarType(type2int(*$1)); }
             | TYPE ARRAY LB INT RB  { $$ = new node::ArrayType(type2int(*$1), $4); }
             ;
 
+FuncDecl:   VarType ID LP Args RP SEMI          { $$ = new node::FuncDecl($1, *$2, $4); }
+            | VarType ID LP Args RP FuncBody    { $$ = new node::FuncDecl($1, *$2, $4, $6); }
+            ;
+
+FuncBody:	LC Stms RC              { $$ = $2;} 
+            ;
+
+Args:       Args COMMA Arg  { $$ = $1; $$->push_back($3); }
+            |               { $$ = new node::Args(); }
+            ;
+
+Arg:        VarType ID      { $$ = new node::Args($1, *$2); }
+            | VarType       { $$ = new node::Args($1); }
+            ;  
 
 Stms:       Stms Stm        { $$ = $1; $$->push_back($2); }
             |               { $$ = new node::Stms(); }
@@ -164,9 +148,6 @@ Stm:        Expr SEMI           { $$ = new node::ExprStm($1); }
             | VarDecl           { $$ = $1; }
             | Block             { $$ = $1; }
             ;           
-
-Block:      LC Stms RC    { $$ new node::Block($2); }    
-            ;
 
 Expr:         Expr PLUS Expr            { $$ = new node::BINOP($1, plus, $3); }
             | Expr SUB Expr     { $$ = new node::BINOP($1, sub, $3); }
@@ -205,13 +186,13 @@ Expr:         Expr PLUS Expr            { $$ = new node::BINOP($1, plus, $3); }
             | ID LP ExprList RP { $$ = new node::FuncCall(*$1, $3); }
             ;
 
-ExprList:	_ExprList COMMA Expr									{  $$ = $1; $$->push_back($3);   }
-			| Expr %prec FUNC_CALL_ARG_LIST							{  $$ = new node::ExprList(); $$->push_back($1);   }
-			|														{  $$ = new node::ExprList();   }
+ExprList:	_ExprList COMMA Expr		{  $$ = $1; $$->push_back($3);   }
+			| Expr %prec ARGLIST	    {  $$ = new node::ExprList(); $$->push_back($1);   }
+			|							{  $$ = new node::ExprList();   }
 			;
 
-_ExprList:	_ExprList COMMA Expr 									{  $$ = $1; $$->push_back($3);   }
-			| Expr %prec FUNC_CALL_ARG_LIST							{  $$ = new node::ExprList(); $$->push_back($1);   }
+_ExprList:	_ExprList COMMA Expr 		{  $$ = $1; $$->push_back($3);   }
+			| Expr %prec ARGLIST		{  $$ = new node::ExprList(); $$->push_back($1);   }
 			;
  
 Constant:   INT             { $$ = new node::Int($1); }
@@ -251,12 +232,7 @@ Cases:      Cases CaseStm   { $$ = $1; $$->push_back($2); }
             |               { $$ = new node::Cases(); }
             ;
 
-Args:       Args COMMA Arg  { $$ = $1; $$->push_back($3); }
-            |               { $$ = new node::Args(); }
+Block:      LC Stms RC    { $$ new node::Block($2); }    
             ;
-
-Arg:        VarType ID      { $$ = new node::Args($1, *$2); }
-            | VarType       { $$ = new node::Args($1); }
-            ;  
 
 %%

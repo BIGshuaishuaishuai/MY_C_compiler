@@ -1,17 +1,17 @@
 %{
-// /**
-//  * @file    lexer.cpp
-//  * @brief   complete the lexer part of the C compiler.
-//  *          你的程序在输出错误提示信息时，需要输出具体的错误类型、出错的位置（源程序行号）
-// 以及相关的说明文字        
-// */
+/**
+ * @file    lexer.cpp
+ * @brief   complete the lexer part of the C compiler.
+ *          你的程序在输出错误提示信息时，需要输出具体的错误类型、出错的位置（源程序行号）
+以及相关的说明文字        
+*/
 
-// /*  yylineno    行号
-//  *  yytext      当前的lex
-//  *  yyleng      当前lex的长度
-//  *  yylex       即这部分的函数
-// */
-    //#include "node.h"
+/*  yylineno    行号
+ *  yytext      当前的lex
+ *  yyleng      当前lex的长度
+ *  yylex       即这部分的函数
+*/
+    //#include "node.hpp"
     #include "parser.hpp"
     #include <stdio.h>
     #include <string>
