@@ -4,121 +4,49 @@
 using namespace std;
 
 #define INFO "[INFO]: "
+// LLVMContext Context;
 
-auto DynStm(Stm* p){
-    IfStm* p_0 = dynamic_cast<IfStm*>(p);
-    ForStm* p_1 = dynamic_cast<ForStm*>(p);
-    WhileStm* p_2 = dynamic_cast<WhileStm*>(p);
-    DoStm* p_3 = dynamic_cast<DoStm*>(p);
-    CaseStm* p_4 = dynamic_cast<CaseStm*>(p);
-    SwitchStm* p_5 = dynamic_cast<SwitchStm*>(p);
-    
-    BreakStm* p_6 = dynamic_cast<BreakStm*>(p);
-    ContinueStm* p_7 = dynamic_cast<ContinueStm*>(p);
-    ReturnStm* p_8 = dynamic_cast<ReturnStm*>(p);
-    Block*p_9 = dynamic_cast<Block*>(p);
-    ExprStm*p_10 = dynamic_cast<ExprStm*>(p);
-
-    if (p_0) return p_0;
-    else if(p_1) return p_1;
-    else if(p_2) return p_2;
-    else if(p_3) return p_3;
-    else if(p_4) return p_4;
-    else if(p_5) return p_5;
-    else if(p_6) return p_6;
-    else if(p_7) return p_7;
-    else if(p_8) return p_8;
-    else if(p_9) return p_9;
-    else if(p_10) return p_10;
-    else return p;
-    
-}
-auto DynDecl(Decl* p){
-    FuncDecl* p_0 = dynamic_cast<FuncDecl*>(p); 
-    VarDecl* p_1 = dynamic_cast<VarDecl*>(p);
-
-    if (p_0) return p_0;
-    else if (p_1) return p_1;
-    else return p;
-}
-auto DynExpr(Expr* p){
-    SOP* p_0 = dynamic_cast<SOP*>(p);
-    BINOP* p_1 = dynamic_cast<BINOP*>(p);
-    ID* p_2 = dynamic_cast<ID*>(p);
-    Int* p_3 = dynamic_cast<Int*>(p);
-    Float* p_4 = dynamic_cast<Float*>(p);
-    Char* p_5 = dynamic_cast<Char*>(p);
-    Constant* p_6 = dynamic_cast<Constant*>(p);
-    FuncCall* p_7 = dynamic_cast<FuncCall*>(p);
-    ArrayCall*p_8 = dynamic_cast<ArrayCall*>(p);
-    if (p_0) return p_0;
-    else if(p_1) return p_1;
-    else if(p_2) return p_2;
-    else if(p_3) return p_3;
-    else if(p_4) return p_4;
-    else if(p_5) return p_5;
-    else if(p_6) return p_6;
-    else if(p_7) return p_7;
-    else if(p_8) return p_8;
-    else return p;
-
-}
-// auto DynCase(Stm* p){
-
-// }
-// auto DynVarInit(Stm* p){
-
-// }
 void CodeContext::CreateContext(Root* root){
     std::cout << "Generating code...\n";
   
     /* Create the top level interpreter function to call as entry */
     vector<const Type*> argTypes;
-    FunctionType *ftype = FunctionType::get(Type::VoidTy, argTypes, false);
-    mainFunction = Function::Create(ftype, GlobalValue::InternalLinkage, "main", module);
-    BasicBlock *bblock = BasicBlock::Create("entry", mainFunction, 0);
+    FunctionType *ftype = FunctionType::get(Type::getVoidTy(Context), argTypes, false);
+    Fcuntion* mainFunction = Function::Create(ftype, GlobalValue::InternalLinkage, "main", module);
+    BasicBlock *bblock = BasicBlock::Create(Context,"entry", mainFunction, 0);
     
     CodeBlock* tmp = new CodeBlock();
     tmp->codeblock = bblock;
     InsBlock(tmp);
-    root.codeGen(*this);
+    root->CodeGen(*this);
     RmTailBlock();
 
     std::cout << "Code is generated.\n";
-    PassManager pm;
-    pm.add(createPrintModulePass(&outs()));
-    pm.run(*module);
+    // PassManager pm;
+    // pm.add(createPrintModulePass(&outs()));
+    // pm.run(*module);
 }
 
-GenericValue CodeContext::runCode() {
-    std::cout << "Running code...\n";
-    ExistingModuleProvider *mp = new ExistingModuleProvider(module);
-    ExecutionEngine *ee = ExecutionEngine::create(mp, false);
-    vector<genericvalue> noargs;
-    GenericValue v = ee->runFunction(mainFunction, noargs);
-    std::cout << "Code was run.\n";
-    return v;
-}
 
-static const Type *typeOf(const VarType& type)
+static Type *typeOf(const VarType& type)
 {
     if (type._type == 3) {
-        return Type::Int64Ty;
+        return Type::getInt64Ty(Context);
     }
     else if (type._type == 2) {
-        return Type::FloatTy;
+        return Type::getDoubleTy(Context);
     }
     else if (type._type == 1) {
-        return Type::Int8Ty;
+        return Type::getInt8Ty(Context);
     }
     
-    return Type::VoidTy;
+    return Type::getVoidTy(Context);
 }
 
 Value* Root::CodeGen(CodeContext& context){
-    Value* final = NULL;
-    for (auto it = _decls.begin(); it != _decls.end();it++) {
-        auto pt = DynDecl(*it);
+    Value* last = NULL;
+    for (auto it = _decls->begin(); it != _decls->end();it++) {
+        auto pt = *it;
         std::cout <<INFO<<"Generating the "<<pt->dec();
         last = pt->CodeGen(context);
     }
@@ -126,43 +54,48 @@ Value* Root::CodeGen(CodeContext& context){
     return last;
 }
 Value* FuncDecl::CodeGen(CodeContext& context){
-    vector<const Type*> argtypes;
+    vector<Type*> argtypes;
     Args::const_iterator it;
-
-    for (it = _args.begin(); it != _args.end();it++) {
-        argtypes.push_back(typeOf(((**it)._Type->)_type));
+    FunctionType* ftype_ = NULL;
+    for (it = _args->begin(); it != _args->end();it++) {
+        argtypes.push_back(typeOf(((**it)._Type)->_type));
     }
-    FuncType* ftype = FuncType::get(typeOf(_Type->_type),argtypes,false);
-    Function * func = Function::Create(ftype,GlobalValue::InternalLinkage,_FuncName.c_str(),context.module);
-    BasicBlock *bblock = BasicBlock::Create("entry", func, 0);
+    if (argtypes.size() == 0){
+        ftype_ = FunctionType::get(typeOf(_Type->_type),false);
+    }
+    else {
+        ftype_ = FunctionType::get(typeOf(_Type->_type),argtypes,false);
+    }
+    Function * func = Function::Create(ftype_,GlobalValue::InternalLinkage,_FuncName.c_str(),context.module);
+    BasicBlock *bblock = BasicBlock::Create(Context,"entry", func, 0);
 
-    CodeBlock* tmp = new CodeBlock()
-    tmp->block = bblock;
+    CodeBlock* tmp = new CodeBlock();
+    tmp->codeblock = bblock;
     context.InsBlock(tmp);
 
-    for (it = _args.begin(); it != _args.end();it++) {
+    for (it = _args->begin(); it != _args->end();it++) {
         (*it)->CodeGen(context);
     }
 
     Value* last = NULL;
-    Stms::const_iterator it;
-    for (it = Stms::begin(); it != Stms::end();it++) {
-        auto pt = DynStm(*it);
-        std::cout << "Generating stm " << it->Des()<< std::endl;
+    Stms::const_iterator it_;
+    for (it_ = _fb->begin(); it_ != _fb->end();it_++) {
+        auto pt = *it_;
+        std::cout << "Generating stm "<< std::endl;
         last = pt->CodeGen(context);
     }
     std::cout << "Genetated function body"<<std::endl;
 
-    ReturnInst::Create(bblock);
+    ReturnInst::Create(Context,bblock);
     context.RmTailBlock();
     std::cout << "Generated function: " << _FuncName<< std::endl;
     return func; 
 }
 Value* Arg::CodeGen(CodeContext& context){
     std::cout << "Generate arg:" << tps[_Type->_type]<< " " << _Name << endl;
-    AllocaInst *alloc = new AllocaInst(typeOf(_Type->_type), _Name.c_str(), context.TailBlock()->codeblock);
+    AllocaInst *alloc = new AllocaInst(typeOf(_Type->_type), 0,_Name.c_str(), context.TailBlock()->codeblock);
     std::map<std::string , Value*>& vars = context.localvars();
-    vars[id.name] = alloc;
+    vars[_Name] = alloc; 
     return alloc;
 }
 Value* VarDecl::CodeGen(CodeContext& context){
@@ -171,13 +104,13 @@ Value* VarDecl::CodeGen(CodeContext& context){
     AllocaInst *alloc = NULL;
     std::map<std::string , Value*>& vars = context.localvars();
 
-    for (it = _list.begin();it != _list.end();it++){
+    for (it = _list->begin();it != _list->end();it++){
         std::cout << "Generate var:" << " " << (*it)->_id << endl;
-        alloc = new AllocaInst(typ, (*it)->_id, context.TailBlock()->codeblock);
-        vars[id.name] = alloc;
+        alloc = new AllocaInst(typ,0, (*it)->_id, context.TailBlock()->codeblock);
+        vars[(*it)->_id] = alloc;
         if ((*it)->_initvaL != NULL) {
             std::cout << "Generating assignment for " << (*it)->_id << endl;
-            StoreInst(((*it)->_initvaL)->codeGen(context), vars[pt->_name], false, context.TailBlock()->codeblock);
+            StoreInst(((*it)->_initvaL)->CodeGen(context), vars[(*it)->_id], false, context.TailBlock()->codeblock);
         }
     }
     return alloc;
@@ -191,35 +124,35 @@ Value* ForStm::CodeGen(CodeContext& context){
 
 }
 
-Value* WhileStm::CodeGen(CodeContext& context){
-    // 创建 While 语句的基本块
-    BasicBlock* loopBB = BasicBlock::Create(Context, "loop", function);
+// Value* WhileStm::CodeGen(CodeContext& context){
+//     // 创建 While 语句的基本块
+//     BasicBlock* loopBB = BasicBlock::Create(Context, "loop", function);
 
-    // 创建条件判断的基本块
-    BasicBlock* condBB = BasicBlock::Create(Context, "cond", function);
+//     // 创建条件判断的基本块
+//     BasicBlock* condBB = BasicBlock::Create(Context, "cond", function);
 
-    // 创建循环体的基本块
-    BasicBlock* bodyBB = BasicBlock::Create(Context, "body", function);
+//     // 创建循环体的基本块
+//     BasicBlock* bodyBB = BasicBlock::Create(Context, "body", function);
 
-    // 在当前基本块中插入跳转到条件判断基本块的指令
-    BranchInst::Create(condBB, currentBlock);
+//     // 在当前基本块中插入跳转到条件判断基本块的指令
+//     BranchInst::Create(condBB, currentBlock);
 
-    // 在条件判断基本块中插入条件判断指令
-    IRBuilder<> builder(condBB);
-    Value* condition = // 条件表达式的值
-    builder.CreateCondBr(condition, bodyBB, loopBB);
+//     // 在条件判断基本块中插入条件判断指令
+//     IRBuilder<> builder(condBB);
+//     Value* condition = // 条件表达式的值
+//     builder.CreateCondBr(condition, bodyBB, loopBB);
 
-    // 在循环体基本块中插入循环体指令
-    IRBuilder<> builder(bodyBB);
-    // 循环体指令
+//     // 在循环体基本块中插入循环体指令
+//     IRBuilder<> builder(bodyBB);
+//     // 循环体指令
 
-    // 在循环体基本块中插入跳转到条件判断基本块的指令
-    BranchInst::Create(condBB, bodyBB);
+//     // 在循环体基本块中插入跳转到条件判断基本块的指令
+//     BranchInst::Create(condBB, bodyBB);
 
-    // 在当前基本块中插入跳转到循环基本块的指令
-    BranchInst::Create(loopBB, currentBlock);
+//     // 在当前基本块中插入跳转到循环基本块的指令
+//     BranchInst::Create(loopBB, currentBlock);
 
-}
+// }
 
 Value* DoStm::CodeGen(CodeContext& context){
 
@@ -247,9 +180,9 @@ Value* ReturnStm::CodeGen(CodeContext& context){
 Value* Block::CodeGen(CodeContext& context){
     Value* last = NULL;
     Stms::const_iterator it;
-    for (it = Stms::begin(); it != Stms::end();it++) {
-        auto pt = DynStm(*it);
-        std::cout << "Generating stm " << it->Des()<< std::endl;
+    for (it = _statements->begin(); it != _statements->end();it++) {
+        auto pt = *it;
+        std::cout << "Generating stm " << pt->Des()<< std::endl;
         last = pt->CodeGen(context);
     }
     std::cout << "Genetated Block"<<std::endl;
@@ -257,77 +190,82 @@ Value* Block::CodeGen(CodeContext& context){
 }
 Value* SOP::CodeGen(CodeContext& context){
     std::cout << "Creating single operation " << bops[op] << endl;
-    auto inst;
     int mode = 0;
+    auto inst = Instruction::Sub ;
     switch(op){
         case 1:return lhs->CodeGen(context);
-        case 2:inst = Instruction::Sub ;mode = 1;break;
-        case 3:inst = Instruction::
+        case 2:;mode = 1;return  BinaryOperator::Create(inst,ConstantInt::get(Type::getInt64Ty(Context), 0, true), lhs->CodeGen(context), "", context.TailBlock()->codeblock);
+        // case 3:auto inst = Instruction::
         // case 4:return 
         case 5:return BinaryOperator::CreateNot(lhs->CodeGen(context), "");
-        default:
-            std::errc<<INFO<<"wrong"<<std::endl;
-            break;
-    }
-    if (mode == 1){
-        return  BinaryOperator::Create(inst,ConstantInt::get(Type::Int64Ty, 0, true);, lhs.codeGen(context), "", context.TailBlock()->codeblock);
     }
     
 
 }
 Value* BINOP::CodeGen(CodeContext& context){
     std::cout << "Creating binary operation " << bops[op] << endl;
-    auto inst;
+    auto inst_1 = Instruction::Add ;
+    auto inst_2 = CmpInst::ICMP_ULT;
+    
     int math = 0,cmp = 0;
-
+    auto pt = lhs;
+    auto new_pt= dynamic_cast<ID*>(pt);
     switch (op)
     {
-        case 1 :case 15:inst = Instruction::Add ;math = 1;break;
-        case 2 :case 16:inst = Instruction::Sub ;math = 1;break;
-        case 3 :case 18:inst = Instruction::Mul ;math = 1;break;
-        case 4 :case 17:inst = Instruction::SDiv;math = 1;break;
-        case 5 :case 19:inst = Instruction::SRem;math = 1;break;
-        case 6 :case 20:inst = Instruction::Shl ;math = 1;break;
-        case 7 :case 21:inst = Instruction::Shr ;math = 1;break;
-        case 8 :inst = CmpInst::ICMP_ULT;cmp = 1;break;
-        case 9 :inst = CmpInst::ICMP_ULE;cmp = 1;break;
-        case 10:inst = CmpInst::ICMP_EQ; cmp = 1;break;
-        case 11:inst = CmpInst::ICMP_UGE;cmp = 1;break;
-        case 12:inst = CmpInst::ICMP_UGT;cmp = 1;break;
-        case 13:inst = CmpInst::ICMP_NE; cmp = 1;break;
+        case 1 :case 15:inst_1 = Instruction::Add ;math = 1;break;
+        case 2 :case 16:inst_1 = Instruction::Sub ;math = 1;break;
+        case 3 :case 18:inst_1 = Instruction::Mul ;math = 1;break;
+        case 4 :case 17:inst_1 = Instruction::SDiv;math = 1;break;
+        case 5 :case 19:inst_1 = Instruction::SRem;math = 1;break;
+        case 6 :case 20:inst_1 = Instruction::Shl ;math = 1;break;
+        case 7 :case 21:inst_1 = Instruction::AShr ;math = 1;break;
+        case 8 :inst_2 = CmpInst::ICMP_ULT;cmp = 1;break;
+        case 9 :inst_2 = CmpInst::ICMP_ULE;cmp = 1;break;
+        case 10:inst_2 = CmpInst::ICMP_EQ; cmp = 1;break;
+        case 11:inst_2 = CmpInst::ICMP_UGE;cmp = 1;break;
+        case 12:inst_2 = CmpInst::ICMP_UGT;cmp = 1;break;
+        case 13:inst_2 = CmpInst::ICMP_NE; cmp = 1;break;
         case 14:
-            std::cout << "Creating assignment for " << lhs->_name << std::endl;
-            auto pt = DynExpr(lhs) 
-            if (context.localvars().find(pt->_name) == context.locals().end()) {
-                std::cerr << "undeclared variable " << pt->_name << std::endl;
-                return NULL;
+            std::cout << "Creating assignment for " << std::endl;
+            if (new_pt){
+                if (context.localvars().find(new_pt->_name) == context.localvars().end()) {
+                    std::cerr << "undeclared variable " << std::endl;
+                    return NULL;
+                }
             }
-            return new StoreInst(pt->codeGen(context), context.localvars()[pt->_name], false, context.TailBlock()->codeblock);
+            
+            return new StoreInst(pt->CodeGen(context), context.localvars()[new_pt->_name], false, context.TailBlock()->codeblock);
         // case 22:inst = Instruction::ICMP;math = 1;break;
 
-        case 22:inst = Instruction::And; math = 1;break;
-        case 23:inst = Instruction::AndSaturate;math = 1;break;
-        case 24:inst = Instruction::Or;  math = 1;break;
-        case 25:inst = Instruction::OrSaturate ;math = 1;break;
+        case 22:inst_1 = Instruction::And; math = 1;break;
+        case 23:inst_1 = Instruction::AndSaturate;math = 1;break;
+        case 24:inst_1 = Instruction::Or;  math = 1;break;
+        case 25:inst_1 = Instruction::OrSaturate ;math = 1;break;
     }
     if (math || cmp){
-        return  BinaryOperator::Create(inst, lhs.codeGen(context),rhs.codeGen(context), "", context.TailBlock()->codeblock);
+        if (math){
+            return  BinaryOperator::Create(inst_1, lhs->CodeGen(context),rhs->CodeGen(context), "", context.TailBlock()->codeblock);
+        }
+        else if (cmp){
+            return  BinaryOperator::Create(inst_2, lhs->CodeGen(context),rhs->CodeGen(context), "", context.TailBlock()->codeblock);
+        }
+        
     }
 }
 Value* FuncCall::CodeGen(CodeContext& context){
     Function *func = context.module->getFunction(_FuncName.c_str());
-    if (function == NULL) {
+    if (func == NULL) {
         std::cerr << "no such function " << _FuncName << std::endl;
     }
     std::vector<Value *> args;
     ExprList::const_iterator it;
-    for (it = arguments.begin(); it != arguments.end(); it++) {
-        auto tp = DynExpr(*it);
+    for (it = _arguments->begin(); it != _arguments->end(); it++) {
+        auto tp = *it;
         std::cout <<"Generate arg "<<std::endl;
         args.push_back(tp->CodeGen(context));
     }
-    CallInst *call = CallInst::Create(func, args.begin(), args.end(), "", context.currentBlock());
-    std::cout << "Generated function call: " << id.name << endl;
+    CallInst *call = CallInst::Create(func, args, "", context.TailBlock()->codeblock);
+    std::cout << "Generated function call: " << _FuncName << endl;
     return call;
 }
 Value* ArrayCall::CodeGen(CodeContext& context){
@@ -335,15 +273,15 @@ Value* ArrayCall::CodeGen(CodeContext& context){
 }
 Value* Char::CodeGen(CodeContext& context){
     std::cout << "Creating char: " << _value << endl;
-    return ConstantInt::get(Type::Int8Ty, value);
+    return ConstantInt::get(Type::getInt8Ty(Context), _value);
 }
 Value* Float::CodeGen(CodeContext& context){
     std::cout << "Creating Float: " << _value << endl;
-    return ConstantFP::get(Type::FP64Ty, _value);
+    return ConstantFP::get(Type::getDoubleTy(Context), _value);
 }
 Value* Int::CodeGen(CodeContext& context){
     std::cout << "Generating integer: " << _value << endl;
-    return ConstantInt::get(Type::Int64Ty, _value, true);
+    return ConstantInt::get(Type::getInt64Ty(Context), _value, true);
 }
 Value* ID::CodeGen(CodeContext& context){
     std::cout << "Generating identifier reference: " << _name << endl;

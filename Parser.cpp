@@ -88,7 +88,7 @@
     int yylex();
     node::Root *root;
 
-#line 95 "Parser.cpp"
+#line 92 "Parser.cpp"
 
 # ifndef YY_CAST
 #  ifdef __cplusplus
@@ -125,62 +125,66 @@ extern int yydebug;
 # define YYTOKENTYPE
   enum yytokentype
   {
-    LP = 258,
-    RP = 259,
-    LC = 260,
-    RC = 261,
-    RB = 262,
-    LB = 263,
-    PLUS = 264,
-    SUB = 265,
-    MULT = 266,
-    DIV = 267,
-    MOD = 268,
-    SHL = 269,
-    SHR = 270,
-    LT = 271,
-    EQ = 272,
-    GT = 273,
-    GE = 274,
-    LE = 275,
-    NE = 276,
-    EQU = 277,
-    ADDEQ = 278,
-    SUBEQ = 279,
-    MULEQ = 280,
-    DIVEQ = 281,
-    MODEQ = 282,
-    SHLEQ = 283,
-    SHREQ = 284,
-    NOT = 285,
-    BNOT = 286,
-    AND = 287,
-    BAND = 288,
-    OR = 289,
-    BOR = 290,
-    RETURN = 291,
-    IF = 292,
-    WHILE = 293,
-    ELSE = 294,
-    FOR = 295,
-    BREAK = 296,
-    SWITCH = 297,
-    CASE = 298,
-    DEFAULT = 299,
-    CONTINUE = 300,
-    DO = 301,
-    PTR = 302,
-    SEMI = 303,
-    COMMA = 304,
-    ARRAY = 305,
-    COLON = 306,
-    INT = 307,
-    ID = 308,
-    TYPE = 309,
-    FLOAT = 310,
-    CHAR = 311,
-    FUNC_CALL_ARG_LIST = 312,
-    NEQ = 313
+    YYEMPTY = -2,
+    YYEOF = 0,                     /* "end of file"  */
+    YYerror = 256,                 /* error  */
+    YYUNDEF = 257,                 /* "invalid token"  */
+    LP = 258,                      /* LP  */
+    RP = 259,                      /* RP  */
+    LC = 260,                      /* LC  */
+    RC = 261,                      /* RC  */
+    RB = 262,                      /* RB  */
+    LB = 263,                      /* LB  */
+    PLUS = 264,                    /* PLUS  */
+    SUB = 265,                     /* SUB  */
+    MULT = 266,                    /* MULT  */
+    DIV = 267,                     /* DIV  */
+    MOD = 268,                     /* MOD  */
+    SHL = 269,                     /* SHL  */
+    SHR = 270,                     /* SHR  */
+    LT = 271,                      /* LT  */
+    EQ = 272,                      /* EQ  */
+    GT = 273,                      /* GT  */
+    GE = 274,                      /* GE  */
+    LE = 275,                      /* LE  */
+    NE = 276,                      /* NE  */
+    EQU = 277,                     /* EQU  */
+    ADDEQ = 278,                   /* ADDEQ  */
+    SUBEQ = 279,                   /* SUBEQ  */
+    MULEQ = 280,                   /* MULEQ  */
+    DIVEQ = 281,                   /* DIVEQ  */
+    MODEQ = 282,                   /* MODEQ  */
+    SHLEQ = 283,                   /* SHLEQ  */
+    SHREQ = 284,                   /* SHREQ  */
+    NOT = 285,                     /* NOT  */
+    BNOT = 286,                    /* BNOT  */
+    AND = 287,                     /* AND  */
+    BAND = 288,                    /* BAND  */
+    OR = 289,                      /* OR  */
+    BOR = 290,                     /* BOR  */
+    RETURN = 291,                  /* RETURN  */
+    IF = 292,                      /* IF  */
+    WHILE = 293,                   /* WHILE  */
+    ELSE = 294,                    /* ELSE  */
+    FOR = 295,                     /* FOR  */
+    BREAK = 296,                   /* BREAK  */
+    SWITCH = 297,                  /* SWITCH  */
+    CASE = 298,                    /* CASE  */
+    DEFAULT = 299,                 /* DEFAULT  */
+    CONTINUE = 300,                /* CONTINUE  */
+    DO = 301,                      /* DO  */
+    PTR = 302,                     /* PTR  */
+    SEMI = 303,                    /* SEMI  */
+    COMMA = 304,                   /* COMMA  */
+    ARRAY = 305,                   /* ARRAY  */
+    COLON = 306,                   /* COLON  */
+    INT = 307,                     /* INT  */
+    ID = 308,                      /* ID  */
+    TYPE = 309,                    /* TYPE  */
+    FLOAT = 310,                   /* FLOAT  */
+    CHAR = 311,                    /* CHAR  */
+    ARGLIST = 312,                 /* ARGLIST  */
+    NEQ = 313                      /* NEQ  */
   };
   typedef enum yytokentype yytoken_kind_t;
 #endif
@@ -209,7 +213,7 @@ union YYSTYPE
     node::Expr *expr;
 	node::ExprList* exprList;
 
-#line 237 "Parser.cpp"
+#line 217 "Parser.cpp"
 
 };
 typedef union YYSTYPE YYSTYPE;
@@ -286,38 +290,38 @@ enum yysymbol_kind_t
   YYSYMBOL_TYPE = 54,                      /* TYPE  */
   YYSYMBOL_FLOAT = 55,                     /* FLOAT  */
   YYSYMBOL_CHAR = 56,                      /* CHAR  */
-  YYSYMBOL_FUNC_CALL_ARG_LIST = 57,        /* FUNC_CALL_ARG_LIST  */
+  YYSYMBOL_ARGLIST = 57,                   /* ARGLIST  */
   YYSYMBOL_NEQ = 58,                       /* NEQ  */
   YYSYMBOL_YYACCEPT = 59,                  /* $accept  */
   YYSYMBOL_Root = 60,                      /* Root  */
   YYSYMBOL_Decls = 61,                     /* Decls  */
   YYSYMBOL_Decl = 62,                      /* Decl  */
   YYSYMBOL_VarDecl = 63,                   /* VarDecl  */
-  YYSYMBOL_FuncDecl = 64,                  /* FuncDecl  */
-  YYSYMBOL_FuncBody = 65,                  /* FuncBody  */
-  YYSYMBOL_VarList = 66,                   /* VarList  */
-  YYSYMBOL_VarInit = 67,                   /* VarInit  */
-  YYSYMBOL_VarType = 68,                   /* VarType  */
-  YYSYMBOL_Stms = 69,                      /* Stms  */
-  YYSYMBOL_Stm = 70,                       /* Stm  */
-  YYSYMBOL_Block = 71,                     /* Block  */
-  YYSYMBOL_Expr = 72,                      /* Expr  */
-  YYSYMBOL_ExprList = 73,                  /* ExprList  */
-  YYSYMBOL__ExprList = 74,                 /* _ExprList  */
-  YYSYMBOL_Constant = 75,                  /* Constant  */
-  YYSYMBOL_ReturnStm = 76,                 /* ReturnStm  */
-  YYSYMBOL_77_1 = 77,                      /* @1  */
-  YYSYMBOL_IfStm = 78,                     /* IfStm  */
-  YYSYMBOL_ForStm = 79,                    /* ForStm  */
-  YYSYMBOL_WhileStm = 80,                  /* WhileStm  */
-  YYSYMBOL_DoStm = 81,                     /* DoStm  */
-  YYSYMBOL_SwitchStm = 82,                 /* SwitchStm  */
-  YYSYMBOL_CaseStm = 83,                   /* CaseStm  */
-  YYSYMBOL_ContinueStm = 84,               /* ContinueStm  */
-  YYSYMBOL_BreakStm = 85,                  /* BreakStm  */
-  YYSYMBOL_Cases = 86,                     /* Cases  */
-  YYSYMBOL_Args = 87,                      /* Args  */
-  YYSYMBOL_Arg = 88                        /* Arg  */
+  YYSYMBOL_VarList = 64,                   /* VarList  */
+  YYSYMBOL_VarInit = 65,                   /* VarInit  */
+  YYSYMBOL_VarType = 66,                   /* VarType  */
+  YYSYMBOL_FuncDecl = 67,                  /* FuncDecl  */
+  YYSYMBOL_FuncBody = 68,                  /* FuncBody  */
+  YYSYMBOL_Args = 69,                      /* Args  */
+  YYSYMBOL_Arg = 70,                       /* Arg  */
+  YYSYMBOL_Stms = 71,                      /* Stms  */
+  YYSYMBOL_Stm = 72,                       /* Stm  */
+  YYSYMBOL_Expr = 73,                      /* Expr  */
+  YYSYMBOL_ExprList = 74,                  /* ExprList  */
+  YYSYMBOL__ExprList = 75,                 /* _ExprList  */
+  YYSYMBOL_Constant = 76,                  /* Constant  */
+  YYSYMBOL_ReturnStm = 77,                 /* ReturnStm  */
+  YYSYMBOL_78_1 = 78,                      /* @1  */
+  YYSYMBOL_IfStm = 79,                     /* IfStm  */
+  YYSYMBOL_ForStm = 80,                    /* ForStm  */
+  YYSYMBOL_WhileStm = 81,                  /* WhileStm  */
+  YYSYMBOL_DoStm = 82,                     /* DoStm  */
+  YYSYMBOL_SwitchStm = 83,                 /* SwitchStm  */
+  YYSYMBOL_CaseStm = 84,                   /* CaseStm  */
+  YYSYMBOL_ContinueStm = 85,               /* ContinueStm  */
+  YYSYMBOL_BreakStm = 86,                  /* BreakStm  */
+  YYSYMBOL_Cases = 87,                     /* Cases  */
+  YYSYMBOL_Block = 88                      /* Block  */
 };
 typedef enum yysymbol_kind_t yysymbol_kind_t;
 
@@ -706,19 +710,19 @@ static const yytype_int8 yytranslate[] =
 };
 
 #if YYDEBUG
-  /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
-static const yytype_int16 yyrline[] =
+/* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
+static const yytype_uint8 yyrline[] =
 {
-       0,   115,   115,   118,   119,   122,   123,   126,   129,   130,
-     133,   136,   137,   140,   141,   144,   145,   146,   150,   151,
-     154,   155,   156,   157,   158,   159,   160,   161,   162,   163,
-     164,   165,   168,   171,   172,   173,   174,   175,   176,   177,
-     178,   179,   180,   181,   182,   183,   184,   185,   186,   187,
-     188,   189,   190,   191,   192,   193,   194,   195,   196,   197,
-     198,   199,   200,   201,   202,   203,   204,   205,   208,   209,
-     210,   213,   214,   217,   218,   219,   222,   222,   226,   227,
-     229,   231,   234,   237,   240,   241,   244,   247,   250,   251,
-     254,   255,   258,   259
+       0,    92,    92,    95,    96,    99,   100,   103,   106,   107,
+     110,   111,   114,   115,   116,   119,   120,   123,   126,   127,
+     130,   131,   134,   135,   138,   139,   140,   141,   142,   143,
+     144,   145,   146,   147,   148,   149,   152,   153,   154,   155,
+     156,   157,   158,   159,   160,   161,   162,   163,   164,   165,
+     166,   167,   168,   169,   170,   171,   172,   173,   174,   175,
+     176,   177,   178,   179,   180,   181,   182,   183,   184,   185,
+     186,   189,   190,   191,   194,   195,   198,   199,   200,   203,
+     203,   207,   208,   210,   212,   215,   218,   221,   222,   225,
+     228,   231,   232,   235
 };
 #endif
 
@@ -734,18 +738,18 @@ static const char *yysymbol_name (yysymbol_kind_t yysymbol) YY_ATTRIBUTE_UNUSED;
    First, the terminals, then, starting at YYNTOKENS, nonterminals.  */
 static const char *const yytname[] =
 {
-  "$end", "error", "$undefined", "LP", "RP", "LC", "RC", "RB", "LB",
-  "PLUS", "SUB", "MULT", "DIV", "MOD", "SHL", "SHR", "LT", "EQ", "GT",
-  "GE", "LE", "NE", "EQU", "ADDEQ", "SUBEQ", "MULEQ", "DIVEQ", "MODEQ",
-  "SHLEQ", "SHREQ", "NOT", "BNOT", "AND", "BAND", "OR", "BOR", "RETURN",
-  "IF", "WHILE", "ELSE", "FOR", "BREAK", "SWITCH", "CASE", "DEFAULT",
-  "CONTINUE", "DO", "PTR", "SEMI", "COMMA", "ARRAY", "COLON", "INT", "ID",
-  "TYPE", "FLOAT", "CHAR", "FUNC_CALL_ARG_LIST", "NEQ", "$accept", "Root",
-  "Decls", "Decl", "VarDecl", "FuncDecl", "FuncBody", "VarList", "VarInit",
-  "VarType", "Stms", "Stm", "Block", "Expr", "ExprList", "_ExprList",
-  "Constant", "ReturnStm", "@1", "IfStm", "ForStm", "WhileStm", "DoStm",
-  "SwitchStm", "CaseStm", "ContinueStm", "BreakStm", "Cases", "Args",
-  "Arg", YY_NULLPTR
+  "\"end of file\"", "error", "\"invalid token\"", "LP", "RP", "LC", "RC",
+  "RB", "LB", "PLUS", "SUB", "MULT", "DIV", "MOD", "SHL", "SHR", "LT",
+  "EQ", "GT", "GE", "LE", "NE", "EQU", "ADDEQ", "SUBEQ", "MULEQ", "DIVEQ",
+  "MODEQ", "SHLEQ", "SHREQ", "NOT", "BNOT", "AND", "BAND", "OR", "BOR",
+  "RETURN", "IF", "WHILE", "ELSE", "FOR", "BREAK", "SWITCH", "CASE",
+  "DEFAULT", "CONTINUE", "DO", "PTR", "SEMI", "COMMA", "ARRAY", "COLON",
+  "INT", "ID", "TYPE", "FLOAT", "CHAR", "ARGLIST", "NEQ", "$accept",
+  "Root", "Decls", "Decl", "VarDecl", "VarList", "VarInit", "VarType",
+  "FuncDecl", "FuncBody", "Args", "Arg", "Stms", "Stm", "Expr", "ExprList",
+  "_ExprList", "Constant", "ReturnStm", "@1", "IfStm", "ForStm",
+  "WhileStm", "DoStm", "SwitchStm", "CaseStm", "ContinueStm", "BreakStm",
+  "Cases", "Block", YY_NULLPTR
 };
 
 static const char *
@@ -827,9 +831,9 @@ static const yytype_int8 yypgoto[] =
 /* YYDEFGOTO[NTERM-NUM].  */
 static const yytype_uint8 yydefgoto[] =
 {
-      -1,     1,     2,     5,   122,     7,    73,    12,    13,   123,
-     106,   124,   125,   126,    78,    79,    32,   127,   153,   128,
-     129,   130,   131,   132,   175,   133,   134,   168,    20,    75
+       0,     1,     2,     5,   122,    12,    13,   123,     8,    73,
+      20,    75,   106,   124,   125,    78,    79,    32,   126,   153,
+     127,   128,   129,   130,   131,   175,   132,   133,   168,   134
 };
 
 /* YYTABLE[YYPACT[STATE-NUM]] -- What to do in state STATE-NUM.  If
@@ -1522,560 +1526,560 @@ yyreduce:
   YY_REDUCE_PRINT (yyn);
   switch (yyn)
     {
-  case 2:
-#line 115 "parser.y"
+  case 2: /* Root: Decls  */
+#line 92 "parser.y"
                   { (yyval.root) = new node::Root(*(yyvsp[0].decls)); }
-#line 1667 "Parser.cpp"
+#line 1533 "Parser.cpp"
     break;
 
-  case 3:
-#line 118 "parser.y"
+  case 3: /* Decls: Decls Decl  */
+#line 95 "parser.y"
                         { (yyvsp[-1].decls)->push_back((yyvsp[0].decl));    (yyval.decls) = (yyvsp[-1].decls); }
-#line 1673 "Parser.cpp"
+#line 1539 "Parser.cpp"
     break;
 
-  case 4:
-#line 119 "parser.y"
+  case 4: /* Decls: %empty  */
+#line 96 "parser.y"
                         { (yyval.decls) = new node::Decls(); }
-#line 1679 "Parser.cpp"
+#line 1545 "Parser.cpp"
     break;
 
-  case 5:
-#line 122 "parser.y"
-                        { (yyval.decl) = (yyvsp[0].varDecl); }
-#line 1685 "Parser.cpp"
+  case 5: /* Decl: VarDecl  */
+#line 99 "parser.y"
+                        { (yyval.decl) = (yyvsp[0].decl); }
+#line 1551 "Parser.cpp"
     break;
 
-  case 6:
-#line 123 "parser.y"
-                        { (yyval.decl) = (yyvsp[0].funcDecl); }
-#line 1691 "Parser.cpp"
+  case 6: /* Decl: FuncDecl  */
+#line 100 "parser.y"
+                        { (yyval.decl) = (yyvsp[0].decl); }
+#line 1557 "Parser.cpp"
     break;
 
-  case 7:
-#line 126 "parser.y"
-                                    { (yyval.varDecl) = new node::VarDecl((yyvsp[-2].varType), (yyvsp[-1].varList)); }
-#line 1697 "Parser.cpp"
+  case 7: /* VarDecl: VarType VarList SEMI  */
+#line 103 "parser.y"
+                                    { (yyval.decl) = new node::VarDecl((yyvsp[-2].varType), (yyvsp[-1].varList)); }
+#line 1563 "Parser.cpp"
     break;
 
-  case 8:
-#line 129 "parser.y"
-                                                { (yyval.funcDecl) = new node::FuncDecl((yyvsp[-5].varType), *(yyvsp[-4].sval), (yyvsp[-2].args)); }
-#line 1703 "Parser.cpp"
-    break;
-
-  case 9:
-#line 130 "parser.y"
-                                                { (yyval.funcDecl) = new node::FuncDecl((yyvsp[-5].varType), *(yyvsp[-4].sval), (yyvsp[-2].args), (yyvsp[0].funcBody)); }
-#line 1709 "Parser.cpp"
-    break;
-
-  case 10:
-#line 133 "parser.y"
-                                        { (yyval.funcBody) = (yyvsp[-1].stms);}
-#line 1715 "Parser.cpp"
-    break;
-
-  case 11:
-#line 136 "parser.y"
+  case 8: /* VarList: VarList COMMA VarInit  */
+#line 106 "parser.y"
                                     { (yyval.varList) = (yyvsp[-2].varList); (yyval.varList)->push_back((yyvsp[0].varInit)); }
-#line 1721 "Parser.cpp"
+#line 1569 "Parser.cpp"
     break;
 
-  case 12:
-#line 137 "parser.y"
+  case 9: /* VarList: VarInit  */
+#line 107 "parser.y"
                                     { (yyval.varList) = new node::VarList(); (yyval.varList)->push_back((yyvsp[0].varInit)); }
-#line 1727 "Parser.cpp"
+#line 1575 "Parser.cpp"
     break;
 
-  case 13:
-#line 140 "parser.y"
+  case 10: /* VarInit: ID  */
+#line 110 "parser.y"
                             { (yyval.varInit) = new node::VarInit(*(yyvsp[0].sval)); }
-#line 1733 "Parser.cpp"
+#line 1581 "Parser.cpp"
     break;
 
-  case 14:
-#line 141 "parser.y"
+  case 11: /* VarInit: ID EQU Expr  */
+#line 111 "parser.y"
                             { (yyval.varInit) = new node::VarInit(*(yyvsp[-2].sval), (yyvsp[0].expr)); }
-#line 1739 "Parser.cpp"
+#line 1587 "Parser.cpp"
     break;
 
-  case 15:
-#line 144 "parser.y"
+  case 12: /* VarType: TYPE  */
+#line 114 "parser.y"
                                     { (yyval.varType) = new node::VarType(type2int(*(yyvsp[0].type))); }
-#line 1745 "Parser.cpp"
+#line 1593 "Parser.cpp"
     break;
 
-  case 16:
-#line 145 "parser.y"
+  case 13: /* VarType: TYPE PTR  */
+#line 115 "parser.y"
                                     { (yyval.varType) = new node::PtrType(type2int(*(yyvsp[-1].type))); }
-#line 1751 "Parser.cpp"
+#line 1599 "Parser.cpp"
     break;
 
-  case 17:
-#line 146 "parser.y"
+  case 14: /* VarType: TYPE ARRAY LB INT RB  */
+#line 116 "parser.y"
                                     { (yyval.varType) = new node::ArrayType(type2int(*(yyvsp[-4].type)), (yyvsp[-1].ival)); }
-#line 1757 "Parser.cpp"
+#line 1605 "Parser.cpp"
     break;
 
-  case 18:
-#line 150 "parser.y"
+  case 15: /* FuncDecl: VarType ID LP Args RP SEMI  */
+#line 119 "parser.y"
+                                                { (yyval.decl) = new node::FuncDecl((yyvsp[-5].varType), *(yyvsp[-4].sval), (yyvsp[-2].args)); }
+#line 1611 "Parser.cpp"
+    break;
+
+  case 16: /* FuncDecl: VarType ID LP Args RP FuncBody  */
+#line 120 "parser.y"
+                                                { (yyval.decl) = new node::FuncDecl((yyvsp[-5].varType), *(yyvsp[-4].sval), (yyvsp[-2].args), (yyvsp[0].stms)); }
+#line 1617 "Parser.cpp"
+    break;
+
+  case 17: /* FuncBody: LC Stms RC  */
+#line 123 "parser.y"
+                                        { (yyval.stms) = (yyvsp[-1].stms);}
+#line 1623 "Parser.cpp"
+    break;
+
+  case 18: /* Args: Args COMMA Arg  */
+#line 126 "parser.y"
+                            { (yyval.args) = (yyvsp[-2].args); (yyval.args)->push_back((yyvsp[0].arg)); }
+#line 1629 "Parser.cpp"
+    break;
+
+  case 19: /* Args: %empty  */
+#line 127 "parser.y"
+                            { (yyval.args) = new node::Args(); }
+#line 1635 "Parser.cpp"
+    break;
+
+  case 20: /* Arg: VarType ID  */
+#line 130 "parser.y"
+                            { (yyval.arg) = new node::Args((yyvsp[-1].varType), *(yyvsp[0].sval)); }
+#line 1641 "Parser.cpp"
+    break;
+
+  case 21: /* Arg: VarType  */
+#line 131 "parser.y"
+                            { (yyval.arg) = new node::Args((yyvsp[0].varType)); }
+#line 1647 "Parser.cpp"
+    break;
+
+  case 22: /* Stms: Stms Stm  */
+#line 134 "parser.y"
                             { (yyval.stms) = (yyvsp[-1].stms); (yyval.stms)->push_back((yyvsp[0].stm)); }
-#line 1763 "Parser.cpp"
+#line 1653 "Parser.cpp"
     break;
 
-  case 19:
-#line 151 "parser.y"
+  case 23: /* Stms: %empty  */
+#line 135 "parser.y"
                             { (yyval.stms) = new node::Stms(); }
-#line 1769 "Parser.cpp"
+#line 1659 "Parser.cpp"
     break;
 
-  case 20:
-#line 154 "parser.y"
+  case 24: /* Stm: Expr SEMI  */
+#line 138 "parser.y"
                                 { (yyval.stm) = new node::ExprStm((yyvsp[-1].expr)); }
-#line 1775 "Parser.cpp"
+#line 1665 "Parser.cpp"
     break;
 
-  case 21:
-#line 155 "parser.y"
+  case 25: /* Stm: ReturnStm  */
+#line 139 "parser.y"
                                 { (yyval.stm) = (yyvsp[0].stm); }
-#line 1781 "Parser.cpp"
+#line 1671 "Parser.cpp"
     break;
 
-  case 22:
-#line 156 "parser.y"
+  case 26: /* Stm: IfStm  */
+#line 140 "parser.y"
                                 { (yyval.stm) = (yyvsp[0].stm); }
 #line 1677 "Parser.cpp"
     break;
 
-  case 23:
-#line 157 "parser.y"
+  case 27: /* Stm: WhileStm  */
+#line 141 "parser.y"
                                 { (yyval.stm) = (yyvsp[0].stm); }
 #line 1683 "Parser.cpp"
     break;
 
-  case 24:
-#line 158 "parser.y"
+  case 28: /* Stm: ForStm  */
+#line 142 "parser.y"
                                 { (yyval.stm) = (yyvsp[0].stm); }
 #line 1689 "Parser.cpp"
     break;
 
-  case 25:
-#line 159 "parser.y"
+  case 29: /* Stm: DoStm  */
+#line 143 "parser.y"
                                 { (yyval.stm) = (yyvsp[0].stm); }
 #line 1695 "Parser.cpp"
     break;
 
-  case 26:
-#line 160 "parser.y"
+  case 30: /* Stm: SwitchStm  */
+#line 144 "parser.y"
                                 { (yyval.stm) = (yyvsp[0].stm); }
 #line 1701 "Parser.cpp"
     break;
 
-  case 27:
-#line 161 "parser.y"
+  case 31: /* Stm: ContinueStm  */
+#line 145 "parser.y"
                                 { (yyval.stm) = (yyvsp[0].stm); }
 #line 1707 "Parser.cpp"
     break;
 
-  case 28:
-#line 162 "parser.y"
+  case 32: /* Stm: BreakStm  */
+#line 146 "parser.y"
                                 { (yyval.stm) = (yyvsp[0].stm); }
-#line 1823 "Parser.cpp"
+#line 1713 "Parser.cpp"
     break;
 
-  case 29:
-#line 163 "parser.y"
+  case 33: /* Stm: SEMI  */
+#line 147 "parser.y"
                                 { (yyval.stm) = NULL; }
-#line 1829 "Parser.cpp"
+#line 1719 "Parser.cpp"
     break;
 
-  case 30:
-#line 164 "parser.y"
-                                { (yyval.stm) = (yyvsp[0].varDecl); }
-#line 1835 "Parser.cpp"
+  case 34: /* Stm: VarDecl  */
+#line 148 "parser.y"
+                                { (yyval.stm) = (yyvsp[0].decl); }
+#line 1725 "Parser.cpp"
     break;
 
-  case 31:
-#line 165 "parser.y"
-                                { (yyval.stm) = (yyvsp[0].block); }
-#line 1841 "Parser.cpp"
+  case 35: /* Stm: Block  */
+#line 149 "parser.y"
+                                { (yyval.stm) = (yyvsp[0].expr); }
+#line 1731 "Parser.cpp"
     break;
 
-  case 32:
-#line 168 "parser.y"
-                          { (yyval.block) new node::Block((yyvsp[-1].stms)); }
-#line 1847 "Parser.cpp"
-    break;
-
-  case 33:
-#line 171 "parser.y"
+  case 36: /* Expr: Expr PLUS Expr  */
+#line 152 "parser.y"
                                         { (yyval.expr) = new node::BINOP((yyvsp[-2].expr), plus, (yyvsp[0].expr)); }
 #line 1737 "Parser.cpp"
     break;
 
-  case 34:
-#line 172 "parser.y"
+  case 37: /* Expr: Expr SUB Expr  */
+#line 153 "parser.y"
                                 { (yyval.expr) = new node::BINOP((yyvsp[-2].expr), sub, (yyvsp[0].expr)); }
 #line 1743 "Parser.cpp"
     break;
 
-  case 35:
-#line 173 "parser.y"
+  case 38: /* Expr: Expr MULT Expr  */
+#line 154 "parser.y"
                                     { (yyval.expr) = new node::BINOP((yyvsp[-2].expr), mult, (yyvsp[0].expr)); }
 #line 1749 "Parser.cpp"
     break;
 
-  case 36:
-#line 174 "parser.y"
+  case 39: /* Expr: Expr DIV Expr  */
+#line 155 "parser.y"
                                 { (yyval.expr) = new node::BINOP((yyvsp[-2].expr), div, (yyvsp[0].expr)); }
 #line 1755 "Parser.cpp"
     break;
 
-  case 37:
-#line 175 "parser.y"
+  case 40: /* Expr: Expr MOD Expr  */
+#line 156 "parser.y"
                                 { (yyval.expr) = new node::BINOP((yyvsp[-2].expr), mod, (yyvsp[0].expr)); }
 #line 1761 "Parser.cpp"
     break;
 
-  case 38:
-#line 176 "parser.y"
+  case 41: /* Expr: Expr SHL Expr  */
+#line 157 "parser.y"
                                 { (yyval.expr) = new node::BINOP((yyvsp[-2].expr), shl, (yyvsp[0].expr)); }
 #line 1767 "Parser.cpp"
     break;
 
-  case 39:
-#line 177 "parser.y"
+  case 42: /* Expr: Expr SHR Expr  */
+#line 158 "parser.y"
                                     { (yyval.expr) = new node::BINOP((yyvsp[-2].expr), shr, (yyvsp[0].expr)); }
 #line 1773 "Parser.cpp"
     break;
 
-  case 40:
-#line 178 "parser.y"
+  case 43: /* Expr: Expr LT Expr  */
+#line 159 "parser.y"
                                 { (yyval.expr) = new node::BINOP((yyvsp[-2].expr), lt, (yyvsp[0].expr)); }
 #line 1779 "Parser.cpp"
     break;
 
-  case 41:
-#line 179 "parser.y"
+  case 44: /* Expr: Expr LE Expr  */
+#line 160 "parser.y"
                                 { (yyval.expr) = new node::BINOP((yyvsp[-2].expr), le, (yyvsp[0].expr)); }
 #line 1785 "Parser.cpp"
     break;
 
-  case 42:
-#line 180 "parser.y"
+  case 45: /* Expr: Expr EQ Expr  */
+#line 161 "parser.y"
                                 { (yyval.expr) = new node::BINOP((yyvsp[-2].expr), eq, (yyvsp[0].expr)); }
 #line 1791 "Parser.cpp"
     break;
 
-  case 43:
-#line 181 "parser.y"
+  case 46: /* Expr: Expr GE Expr  */
+#line 162 "parser.y"
                                 { (yyval.expr) = new node::BINOP((yyvsp[-2].expr), ge, (yyvsp[0].expr)); }
 #line 1797 "Parser.cpp"
     break;
 
-  case 44:
-#line 182 "parser.y"
+  case 47: /* Expr: Expr GT Expr  */
+#line 163 "parser.y"
                                 { (yyval.expr) = new node::BINOP((yyvsp[-2].expr), gt, (yyvsp[0].expr)); }
 #line 1803 "Parser.cpp"
     break;
 
-  case 45:
-#line 183 "parser.y"
+  case 48: /* Expr: Expr NE Expr  */
+#line 164 "parser.y"
                                 { (yyval.expr) = new node::BINOP((yyvsp[-2].expr), ne, (yyvsp[0].expr)); }
 #line 1809 "Parser.cpp"
     break;
 
-  case 46:
-#line 184 "parser.y"
+  case 49: /* Expr: Expr EQU Expr  */
+#line 165 "parser.y"
                                  { (yyval.expr) = new node::BINOP((yyvsp[-2].expr), equ, (yyvsp[0].expr)); }
 #line 1815 "Parser.cpp"
     break;
 
-  case 47:
-#line 185 "parser.y"
+  case 50: /* Expr: Expr ADDEQ Expr  */
+#line 166 "parser.y"
                                     { (yyval.expr) = new node::BINOP((yyvsp[-2].expr), addeq, (yyvsp[0].expr)); }
 #line 1821 "Parser.cpp"
     break;
 
-  case 48:
-#line 186 "parser.y"
+  case 51: /* Expr: Expr SUBEQ Expr  */
+#line 167 "parser.y"
                                     { (yyval.expr) = new node::BINOP((yyvsp[-2].expr), subeq, (yyvsp[0].expr)); }
 #line 1827 "Parser.cpp"
     break;
 
-  case 49:
-#line 187 "parser.y"
+  case 52: /* Expr: Expr DIVEQ Expr  */
+#line 168 "parser.y"
                                     { (yyval.expr) = new node::BINOP((yyvsp[-2].expr), diveq, (yyvsp[0].expr)); }
 #line 1833 "Parser.cpp"
     break;
 
-  case 50:
-#line 188 "parser.y"
+  case 53: /* Expr: Expr MULEQ Expr  */
+#line 169 "parser.y"
                                     { (yyval.expr) = new node::BINOP((yyvsp[-2].expr), muleq, (yyvsp[0].expr)); }
 #line 1839 "Parser.cpp"
     break;
 
-  case 51:
-#line 189 "parser.y"
+  case 54: /* Expr: Expr MODEQ Expr  */
+#line 170 "parser.y"
                                     { (yyval.expr) = new node::BINOP((yyvsp[-2].expr), modeq, (yyvsp[0].expr)); }
 #line 1845 "Parser.cpp"
     break;
 
-  case 52:
-#line 190 "parser.y"
+  case 55: /* Expr: Expr SHLEQ Expr  */
+#line 171 "parser.y"
                                     { (yyval.expr) = new node::BINOP((yyvsp[-2].expr), shleq, (yyvsp[0].expr)); }
 #line 1851 "Parser.cpp"
     break;
 
-  case 53:
-#line 191 "parser.y"
+  case 56: /* Expr: Expr SHREQ Expr  */
+#line 172 "parser.y"
                                     { (yyval.expr) = new node::BINOP((yyvsp[-2].expr), shreq, (yyvsp[0].expr)); }
 #line 1857 "Parser.cpp"
     break;
 
-  case 54:
-#line 192 "parser.y"
+  case 57: /* Expr: Expr AND Expr  */
+#line 173 "parser.y"
                                 { (yyval.expr) = new node::BINOP((yyvsp[-2].expr), and, (yyvsp[0].expr)); }
 #line 1863 "Parser.cpp"
     break;
 
-  case 55:
-#line 193 "parser.y"
+  case 58: /* Expr: Expr BAND Expr  */
+#line 174 "parser.y"
                                     { (yyval.expr) = new node::BINOP((yyvsp[-2].expr), band, (yyvsp[0].expr)); }
 #line 1869 "Parser.cpp"
     break;
 
-  case 56:
-#line 194 "parser.y"
+  case 59: /* Expr: Expr OR Expr  */
+#line 175 "parser.y"
                                 { (yyval.expr) = new node::BINOP((yyvsp[-2].expr), or, (yyvsp[0].expr)); }
 #line 1875 "Parser.cpp"
     break;
 
-  case 57:
-#line 195 "parser.y"
+  case 60: /* Expr: Expr BOR Expr  */
+#line 176 "parser.y"
                                 { (yyval.expr) = new node::BINOP((yyvsp[-2].expr), bor, (yyvsp[0].expr)); }
 #line 1881 "Parser.cpp"
     break;
 
-  case 58:
-#line 196 "parser.y"
+  case 61: /* Expr: LP Expr RP  */
+#line 177 "parser.y"
                                 { (yyval.expr) = (yyvsp[-1].expr); }
 #line 1887 "Parser.cpp"
     break;
 
-  case 59:
-#line 197 "parser.y"
+  case 62: /* Expr: PLUS Expr  */
+#line 178 "parser.y"
                                     { (yyval.expr) = new node::SOP((yyvsp[0].expr), splus); }
 #line 1893 "Parser.cpp"
     break;
 
-  case 60:
-#line 198 "parser.y"
+  case 63: /* Expr: SUB Expr  */
+#line 179 "parser.y"
                                     { (yyval.expr) = new node::SOP((yyvsp[0].expr), ssub); }
 #line 1899 "Parser.cpp"
     break;
 
-  case 61:
-#line 199 "parser.y"
+  case 64: /* Expr: NOT Expr  */
+#line 180 "parser.y"
                                     { (yyval.expr) = new node::SOP((yyvsp[0].expr), not); }
 #line 1905 "Parser.cpp"
     break;
 
-  case 62:
-#line 200 "parser.y"
+  case 65: /* Expr: MULT Expr  */
+#line 181 "parser.y"
                                     { (yyval.expr) = new node::SOP((yyvsp[0].expr), smult); }
 #line 1911 "Parser.cpp"
     break;
 
-  case 63:
-#line 201 "parser.y"
+  case 66: /* Expr: BNOT Expr  */
+#line 182 "parser.y"
                                     { (yyval.expr) = new node::SOP((yyvsp[0].expr), sbnot); }
 #line 1917 "Parser.cpp"
     break;
 
-  case 64:
-#line 202 "parser.y"
-                                   { (yyval.expr) = (yyvsp[0].constant); }
-#line 2039 "Parser.cpp"
+  case 67: /* Expr: Constant  */
+#line 183 "parser.y"
+                                   { (yyval.expr) = (yyvsp[0].expr); }
+#line 1923 "Parser.cpp"
     break;
 
-  case 65:
-#line 203 "parser.y"
+  case 68: /* Expr: ID  */
+#line 184 "parser.y"
                                 { (yyval.expr) = new node::ID(*(yyvsp[0].sval)); }
 #line 1929 "Parser.cpp"
     break;
 
-  case 66:
-#line 204 "parser.y"
+  case 69: /* Expr: ID LB Expr RB  */
+#line 185 "parser.y"
                                 { (yyval.expr) = new node::ArrayCall(*(yyvsp[-3].sval), (yyvsp[-1].expr)); }
 #line 1935 "Parser.cpp"
     break;
 
-  case 67:
-#line 205 "parser.y"
+  case 70: /* Expr: ID LP ExprList RP  */
+#line 186 "parser.y"
                                 { (yyval.expr) = new node::FuncCall(*(yyvsp[-3].sval), (yyvsp[-1].exprList)); }
 #line 1941 "Parser.cpp"
     break;
 
-  case 68:
-#line 208 "parser.y"
-                                                                                                        {  (yyval.exprList) = (yyvsp[-2].exprList); (yyval.exprList)->push_back((yyvsp[0].expr));   }
-#line 2063 "Parser.cpp"
+  case 71: /* ExprList: _ExprList COMMA Expr  */
+#line 189 "parser.y"
+                                                {  (yyval.exprList) = (yyvsp[-2].exprList); (yyval.exprList)->push_back((yyvsp[0].expr));   }
+#line 1947 "Parser.cpp"
     break;
 
-  case 69:
-#line 209 "parser.y"
-                                                                                                        {  (yyval.exprList) = new node::ExprList(); (yyval.exprList)->push_back((yyvsp[0].expr));   }
-#line 2069 "Parser.cpp"
+  case 72: /* ExprList: Expr  */
+#line 190 "parser.y"
+                                                    {  (yyval.exprList) = new node::ExprList(); (yyval.exprList)->push_back((yyvsp[0].expr));   }
+#line 1953 "Parser.cpp"
     break;
 
-  case 70:
-#line 210 "parser.y"
-                                                                                                                                        {  (yyval.exprList) = new node::ExprList();   }
-#line 2075 "Parser.cpp"
+  case 73: /* ExprList: %empty  */
+#line 191 "parser.y"
+                                                                                {  (yyval.exprList) = new node::ExprList();   }
+#line 1959 "Parser.cpp"
     break;
 
-  case 71:
-#line 213 "parser.y"
-                                                                                                        {  (yyval.exprList) = (yyvsp[-2].exprList); (yyval.exprList)->push_back((yyvsp[0].expr));   }
-#line 2081 "Parser.cpp"
+  case 74: /* _ExprList: _ExprList COMMA Expr  */
+#line 194 "parser.y"
+                                                {  (yyval.exprList) = (yyvsp[-2].exprList); (yyval.exprList)->push_back((yyvsp[0].expr));   }
+#line 1965 "Parser.cpp"
     break;
 
-  case 72:
-#line 214 "parser.y"
-                                                                                                        {  (yyval.exprList) = new node::ExprList(); (yyval.exprList)->push_back((yyvsp[0].expr));   }
-#line 2087 "Parser.cpp"
+  case 75: /* _ExprList: Expr  */
+#line 195 "parser.y"
+                                                        {  (yyval.exprList) = new node::ExprList(); (yyval.exprList)->push_back((yyvsp[0].expr));   }
+#line 1971 "Parser.cpp"
     break;
 
-  case 73:
-#line 217 "parser.y"
-                            { (yyval.constant) = new node::Int((yyvsp[0].ival)); }
-#line 2093 "Parser.cpp"
+  case 76: /* Constant: INT  */
+#line 198 "parser.y"
+                            { (yyval.expr) = new node::Int((yyvsp[0].ival)); }
+#line 1977 "Parser.cpp"
     break;
 
-  case 74:
-#line 218 "parser.y"
-                            { (yyval.constant) = new node::Char((yyvsp[0].cval)); }
-#line 2099 "Parser.cpp"
+  case 77: /* Constant: CHAR  */
+#line 199 "parser.y"
+                            { (yyval.expr) = new node::Char((yyvsp[0].cval)); }
+#line 1983 "Parser.cpp"
     break;
 
-  case 75:
-#line 219 "parser.y"
-                            { (yyval.constant) = new node::Float((yyvsp[0].dval)); }
-#line 2105 "Parser.cpp"
+  case 78: /* Constant: FLOAT  */
+#line 200 "parser.y"
+                            { (yyval.expr) = new node::Float((yyvsp[0].dval)); }
+#line 1989 "Parser.cpp"
     break;
 
-  case 76:
-#line 222 "parser.y"
+  case 79: /* @1: %empty  */
+#line 203 "parser.y"
                                 { (yyval.Stm) = new node::ReturnStm((yyvsp[-1].expr)); }
 #line 1995 "Parser.cpp"
     break;
 
-  case 77:
-#line 223 "parser.y"
+  case 80: /* ReturnStm: RETURN Expr SEMI @1 RETURN SEMI  */
+#line 204 "parser.y"
                                 { (yyval.stm) = new node::ReturnStm(NULL); }
 #line 2001 "Parser.cpp"
     break;
 
-  case 78:
-#line 226 "parser.y"
-                                            { (yyval.stm) = new node::IfStm((yyvsp[-4].expr), (yyvsp[-2].block), (yyvsp[0].block), true); }
-#line 2123 "Parser.cpp"
+  case 81: /* IfStm: IF LP Expr RP Block ELSE Block  */
+#line 207 "parser.y"
+                                            { (yyval.stm) = new node::IfStm((yyvsp[-4].expr), (yyvsp[-2].expr), (yyvsp[0].expr), true); }
+#line 2007 "Parser.cpp"
     break;
 
-  case 79:
-#line 227 "parser.y"
-                                            { (yyval.stm) = new node::IfStm((yyvsp[-2].expr), (yyvsp[0].block), NULL, false); }
-#line 2129 "Parser.cpp"
+  case 82: /* IfStm: IF LP Expr RP Block  */
+#line 208 "parser.y"
+                                            { (yyval.stm) = new node::IfStm((yyvsp[-2].expr), (yyvsp[0].expr), NULL, false); }
+#line 2013 "Parser.cpp"
     break;
 
-  case 80:
-#line 229 "parser.y"
-                                                        { (yyval.stm) = new node::ForStm((yyvsp[-6].expr), (yyvsp[-4].expr), (yyvsp[-2].expr), (yyvsp[0].block)); }
-#line 2135 "Parser.cpp"
+  case 83: /* ForStm: FOR LP Expr SEMI Expr SEMI Expr RP Block  */
+#line 210 "parser.y"
+                                                        { (yyval.stm) = new node::ForStm((yyvsp[-6].expr), (yyvsp[-4].expr), (yyvsp[-2].expr), (yyvsp[0].expr)); }
+#line 2019 "Parser.cpp"
     break;
 
-  case 81:
-#line 231 "parser.y"
-                                    { (yyval.stm) = new node::WhileStm((yyvsp[-2].expr), (yyvsp[0].block)); }
-#line 2141 "Parser.cpp"
+  case 84: /* WhileStm: WHILE LP Expr RP Block  */
+#line 212 "parser.y"
+                                    { (yyval.stm) = new node::WhileStm((yyvsp[-2].expr), (yyvsp[0].expr)); }
+#line 2025 "Parser.cpp"
     break;
 
-  case 82:
-#line 234 "parser.y"
-                                            { (yyval.stm) = new node::DoStm((yyvsp[-2].expr), (yyvsp[-5].block)); }
-#line 2147 "Parser.cpp"
+  case 85: /* DoStm: DO Block WHILE LP Expr RP SEMI  */
+#line 215 "parser.y"
+                                            { (yyval.stm) = new node::DoStm((yyvsp[-2].expr), (yyvsp[-5].expr)); }
+#line 2031 "Parser.cpp"
     break;
 
-  case 83:
-#line 237 "parser.y"
+  case 86: /* SwitchStm: SWITCH LP Expr RP LC Cases RC  */
+#line 218 "parser.y"
                                             { (yyval.stm) = new node::SwitchStm((yyvsp[-4].expr), (yyvsp[-1].cases)); }
 #line 2037 "Parser.cpp"
     break;
 
-  case 84:
-#line 240 "parser.y"
+  case 87: /* CaseStm: CASE Expr COLON Stms  */
+#line 221 "parser.y"
                                             { (yyval.stm) = new node::CaseStm((yyvsp[-2].expr), (yyvsp[0].stms)); }
 #line 2043 "Parser.cpp"
     break;
 
-  case 85:
-#line 241 "parser.y"
+  case 88: /* CaseStm: DEFAULT COLON Stms  */
+#line 222 "parser.y"
                                        { (yyval.stm) = new node::CaseStm(NULL, (yyvsp[0].stms)); }
 #line 2049 "Parser.cpp"
     break;
 
-  case 86:
-#line 244 "parser.y"
+  case 89: /* ContinueStm: CONTINUE SEMI  */
+#line 225 "parser.y"
                             { (yyval.stm) = new node::ContinueStm(); }
 #line 2055 "Parser.cpp"
     break;
 
-  case 87:
-#line 247 "parser.y"
+  case 90: /* BreakStm: BREAK SEMI  */
+#line 228 "parser.y"
                             { (yyval.stm) = new node::BreakStm(); }
 #line 2061 "Parser.cpp"
     break;
 
-  case 88:
-#line 250 "parser.y"
+  case 91: /* Cases: Cases CaseStm  */
+#line 231 "parser.y"
                             { (yyval.cases) = (yyvsp[-1].cases); (yyval.cases)->push_back((yyvsp[0].stm)); }
 #line 2067 "Parser.cpp"
     break;
 
-  case 89:
-#line 251 "parser.y"
+  case 92: /* Cases: %empty  */
+#line 232 "parser.y"
                             { (yyval.cases) = new node::Cases(); }
 #line 2073 "Parser.cpp"
     break;
 
-  case 90:
-#line 254 "parser.y"
-                            { (yyval.args) = (yyvsp[-2].args); (yyval.args)->push_back((yyvsp[0].arg)); }
-#line 2195 "Parser.cpp"
-    break;
-
-  case 91:
-#line 255 "parser.y"
-                            { (yyval.args) = new node::Args(); }
-#line 2201 "Parser.cpp"
-    break;
-
-  case 92:
-#line 258 "parser.y"
-                            { (yyval.arg) = new node::Args((yyvsp[-1].varType), *(yyvsp[0].sval)); }
-#line 2207 "Parser.cpp"
-    break;
-
-  case 93:
-#line 259 "parser.y"
-                            { (yyval.arg) = new node::Args((yyvsp[0].varType)); }
-#line 2213 "Parser.cpp"
+  case 93: /* Block: LC Stms RC  */
+#line 235 "parser.y"
+                          { (yyval.expr) new node::Block((yyvsp[-1].stms)); }
+#line 2079 "Parser.cpp"
     break;
 
 
-#line 2217 "Parser.cpp"
+#line 2083 "Parser.cpp"
 
       default: break;
     }
@@ -2267,4 +2271,5 @@ yyreturnlab:
 
   return yyresult;
 }
-#line 262 "parser.y"
+
+#line 238 "parser.y"
