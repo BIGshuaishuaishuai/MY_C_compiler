@@ -10,9 +10,9 @@ void CodeContext::CreateContext(Root* root){
     std::cout << "Generating code...\n";
   
     /* Create the top level interpreter function to call as entry */
-    vector<const Type*> argTypes;
+    vector<Type*> argTypes;
     FunctionType *ftype = FunctionType::get(Type::getVoidTy(Context), argTypes, false);
-    Fcuntion* mainFunction = Function::Create(ftype, GlobalValue::InternalLinkage, "main", module);
+    Function* mainFunction = Function::Create(ftype, GlobalValue::InternalLinkage, "main", module);
     BasicBlock *bblock = BasicBlock::Create(Context,"entry", mainFunction, 0);
     
     CodeBlock* tmp = new CodeBlock();
@@ -238,16 +238,17 @@ Value* BINOP::CodeGen(CodeContext& context){
         // case 22:inst = Instruction::ICMP;math = 1;break;
 
         case 22:inst_1 = Instruction::And; math = 1;break;
-        case 23:inst_1 = Instruction::AndSaturate;math = 1;break;
+        case 23:inst_1 = Instruction::And;math = 1;break;
         case 24:inst_1 = Instruction::Or;  math = 1;break;
-        case 25:inst_1 = Instruction::OrSaturate ;math = 1;break;
+        case 25:inst_1 = Instruction::Or ;math = 1;break;
     }
     if (math || cmp){
         if (math){
             return  BinaryOperator::Create(inst_1, lhs->CodeGen(context),rhs->CodeGen(context), "", context.TailBlock()->codeblock);
         }
         else if (cmp){
-            return  BinaryOperator::Create(inst_2, lhs->CodeGen(context),rhs->CodeGen(context), "", context.TailBlock()->codeblock);
+            // return   ICmpInst(*(context.TailBlock()->codeblock),inst_2, lhs->CodeGen(context),rhs->CodeGen(context), "");
+            return NULL;
         }
         
     }
@@ -290,5 +291,5 @@ Value* ID::CodeGen(CodeContext& context){
         std::cerr << "undeclared variable " << _name << endl;
         return NULL;
     }
-    return new LoadInst(vars[_name], "", false, context.TailBlock()->codeblock);
+    return new LoadInst(vars[_name]->getType(),vars[_name], "", false, context.TailBlock()->codeblock);
 }

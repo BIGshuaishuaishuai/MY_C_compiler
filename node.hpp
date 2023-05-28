@@ -49,19 +49,19 @@ typedef std::vector<CaseStm*> Cases;
 typedef std::vector<VarInit*> VarList;
 typedef std::vector<Arg*> Args;
 
-// enum BOP {  // bi-op
-//     plus = 1, sub, mult, div, mod, shl, shr, lt, le, eq, ge, gt,
-//     ne, equ, addeq, subeq, diveq, muleq, modeq, shleq, shreq,
-//     and, band, or, bor
-// };
+enum BOP {  // bi-op
+    plus_ = 1, sub_, mult_, div_, mod_, shl_, shr_, lt_, le_, eq_, ge_, gt_,
+    ne_, equ_, addeq_, subeq_, diveq_, muleq_, modeq_, shleq_, shreq_,
+    and_, band_, or_, bor_
+};
 
-// enum SOP {  // single operation
-//     splus = 1, ssub,  not, smult, sbnot
-// };
+enum SOP_ {  // single operation
+    splus_ = 1, ssub_,  not_, smult_, sbnot_
+};
 
-// enum type {
-//     void_type = 0, char_type, float_type, int_type 
-// };
+enum type {
+    void_type = 0, char_type, float_type, int_type 
+};
 
 std::string tps[4] = {"void ", "char ", "float ", "int "};
 std::string bops[30] = {
