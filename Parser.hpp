@@ -125,18 +125,18 @@ union YYSTYPE
     std::string *type;
     float fval;
     char cval;
-    Node::Root *root;
-    Node::Decl *decl;
-    Node::Decls *decls; 
-    Node::VarType *varType;
-    Node::Stm *stm;
-    Node::Stms *stms;
-    Node::Arg *arg;
-    Node::Args *args;
-    Node::VarInit *varInit;
-    Node::VarList *varList;
-    Node::Expr *expr;
-	Node::ExprList* exprList;
+    Root *root;
+    Decl *decl;
+    Decls *decls; 
+    VarType *varType;
+    Stm *stm;
+    Stms *stms;
+    Arg *arg;
+    Args *args;
+    VarInit *varInit;
+    VarList *varList;
+    Expr *expr;
+	ExprList* exprList;
 
 #line 142 "Parser.hpp"
 

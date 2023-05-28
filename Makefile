@@ -1,7 +1,7 @@
 all: parser
 
 parser: parser.cpp CodeTran.cpp main.cpp lexer.cpp
-	g++ -o $@ `llvm-config-14 --libs core native --cxxflags --ldflags` *.cpp
+	g++ -o parser `llvm-config-14 --libs core native --cxxflags --ldflags` *.cpp
 
 parser.hpp: parser.cpp
 
