@@ -286,3 +286,90 @@ typedef std::vector<Arg*> Args;
 ## 六、代码生成和代码优化
 
 ## 七、测试
+
+### lex部分的测试
+
+我们在每个token后面增加一行代码，使其打印出对应的token内容，输入文件`test.txt`并打印出结果。
+`test.txt`为如下代码
+```c++
+// abc
+int main()
+{
+    int a = 56;
+    char b;
+    float *c = 1.5;
+    while(a > 0) {
+        a = a - 1;
+    }
+    if(a == 0) b = 'a';
+    return 0;
+}
+```
+
+打印出的结果如下：
+```shell
+~/CP/MY_C_compiler$ ./lex_test
+
+type: int
+ID: main
+lp 
+rp 
+
+lc 
+
+type: int
+ID: a
+=  
+INT: 56
+;  
+
+type: char
+ID: b
+;  
+
+type: float
+*  
+ID: c
+=  
+FLOAT: 1.5
+;  
+
+while 
+lp 
+ID: a
+>  
+INT: 0
+rp 
+lc 
+
+ID: a
+=  
+ID: a
+-  
+INT: 1
+;  
+
+rc 
+
+if 
+lp 
+ID: a
+== 
+INT: 0
+rp 
+ID: b
+=  
+CHAR: a
+;  
+
+return 
+INT: 0
+;  
+
+rc 
+```
+对应的截图：
+
+<img src="pic/1.png" alt="1" style="zoom:50%;" />
+
+可以看到，每个lex的值均打印成功，尤其是ID,FLOAT,INT,CHAR这些比较复杂的正则表达式均能实现成功。
