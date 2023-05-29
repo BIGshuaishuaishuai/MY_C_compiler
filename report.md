@@ -373,3 +373,46 @@ rc
 <img src="pic/1.png" alt="1" style="zoom:50%;" />
 
 可以看到，每个lex的值均打印成功，尤其是ID,FLOAT,INT,CHAR这些比较复杂的正则表达式均能实现成功。
+
+
+```shell
+root@4f6fd4e892c2:/home/tmp/MY_C_compiler# echo 'void main(){ int a = 1; int x = 3*a + 5;}' | ./parser
+[main starts]
+
+[parser root]: 0x693be0
+[paerser done]
+Generating code...
+[INFO]: Into CodeGen
+[INFO]: into for
+[INFO]: Generating the 
+Generating stm 
+Generating integer: 1
+Generating stm 
+Creating binary operation plus 
+Creating binary operation mult 
+Generating integer: 3
+Generating identifier reference: a
+Generating integer: 5
+Genetated function body
+Generated function: main
+[INFO]: Generated ROOT
+Code is generated.
+
+; ModuleID = 'main'
+source_filename = "main"
+
+define internal void @main() {
+entry:
+}
+
+define internal void @main.1() {
+entry:
+  %a = alloca i64
+  store i64 1, i64* %a
+  %x = alloca i64
+  %0 = load i64*, i64* %a
+  %1 = mul i64 3, i64* %0
+  %2 = add i64 %1, 5
+  store i64 %2, i64* %x
+  ret void
+}
