@@ -1,7 +1,9 @@
+#ifndef __CODETRAN_HPP__
+#define __CODETRAN_HPP__
 #include <string>
 #include <map>
 #include <stack>
-
+#include "node.hpp"
 #include <llvm/IR/Value.h>
 #include <llvm/IR/BasicBlock.h>
 #include <llvm/IR/Module.h>
@@ -32,23 +34,16 @@
 #include <llvm/Transforms/InstCombine/InstCombine.h>
 #include <llvm/Transforms/Scalar.h>
 #include <llvm/Transforms/Scalar/GVN.h>
-#include <llvm/MC/TargetRegistry.h>
 #include <llvm/Support/FileSystem.h>
 #include <llvm/Support/Host.h>
 #include <llvm/Support/TargetSelect.h>
 #include <llvm/Target/TargetMachine.h>
 #include <llvm/Target/TargetOptions.h>
 
-
-
 using namespace llvm;
+// using namespace node;
 
-class node;
-extern llvm::LLVMContext Context;
-
-extern llvm::IRBuilder<> IRBuilder;
-
-
+static LLVMContext Context;
 
 class CodeBlock{
 public:
@@ -56,6 +51,7 @@ public:
     CodeBlock *prev;
     CodeBlock *next;
     std::map<std::string, Value*> local_vars;
+    CodeBlock() : codeblock(NULL),prev(NULL),next(NULL){}
 };
 
 // This class is a list of the CodeBlocks
@@ -66,17 +62,24 @@ private:
     Function* mainfunction;
 public:
     Module *module;
-    CodeContext(): module(new Module("main",Context)) {}
-    void CreateContext(Root* root);
+    IRBuilder<> builder;
+    CodeContext(): module(new Module("main",Context)),head_block(NULL),tail_block(NULL),mainfunction(NULL),builder(IRBuilder<>(Context)) {}
+    void CreateContext(node::Root* root);
     GenericValue runCode();
     CodeBlock* HeadBlock(){return head_block;}
     CodeBlock* TailBlock(){return tail_block;}
     std::map<std::string , Value*>& localvars() { return tail_block->local_vars; }
     void InsBlock(CodeBlock* new_block){
-        new_block->prev = tail_block;
-        new_block->next = NULL;
-        tail_block->next = new_block;
-        tail_block = new_block;
+        if (head_block == NULL){
+            head_block = new_block;
+            tail_block = new_block;
+        }
+        else {
+            new_block->prev = tail_block;
+            new_block->next = NULL;
+            tail_block->next = new_block;
+            tail_block = new_block;
+        }
     }
     void RmHeadBlock(){
         if (head_block != NULL){
@@ -92,7 +95,7 @@ public:
     void RmTailBlock(){
         if (tail_block != NULL){
             auto tmp = tail_block;
-            tail_block = head_block->prev;
+            tail_block = tail_block->prev;
             free(tmp);
         }
         else{
@@ -102,3 +105,5 @@ public:
     }
       
 };
+
+#endif

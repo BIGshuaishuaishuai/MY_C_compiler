@@ -11,17 +11,17 @@
  *  yyleng      当前lex的长度
  *  yylex       即这部分的函数
 */
-    //#include "node.hpp"
+    #include "node.hpp"
     #include "parser.hpp"
-    #include <stdio.h>
     #include <string>
     #include <iostream>
     extern "C" int yywrap() {return 1;}
+    // extern yyleng;
     using namespace std;
 %}
 
 %option outfile="lexer.cpp"
-
+%option never-interactive
 %%
 
 "("     { return LP; }

@@ -1,25 +1,27 @@
 %{
     #include <iostream>
+    #include <string>
     #include "node.hpp" 
-
+    
     int type2int(std::string type)
     {
-        if(type == "void") return void_type;
-        else if(type == "char") return char_type;
-        else if(type == "float") return float_type;
-        else if(type == "int") return int_type;
+        if(type == "void") return node::void_type;
+        else if(type == "char") return node::char_type;
+        else if(type == "float") return node::float_type;
+        else if(type == "int") return node::int_type;
         else return -1;
     }
 
     void yyerror(const char *s) {
-        std::printf("Error: %s\n", s);
-        std::exit(1); 
+        printf("Error: %s\n", s);
+        exit(1); 
     }
     int yylex();
-    Root *root;
+    node::Root *root;
 %}
 
-%output "Parser.cpp"
+%output "parser.cpp"
+
 
 %union {
     int ival;
@@ -27,18 +29,21 @@
     std::string *type;
     float fval;
     char cval;
-    Root *root;
-    Decl *decl;
-    Decls *decls; 
-    VarType *varType;
-    Stm *stm;
-    Stms *stms;
-    Arg *arg;
-    Args *args;
-    VarInit *varInit;
-    VarList *varList;
-    Expr *expr;
-	ExprList* exprList;
+    node::Root *root_;
+    node::Decl *decl;
+    node::Decls *decls; 
+    node::VarType *varType;
+    node::Stm *stm;
+    node::Stms *stms;
+    node::Block *block;
+    node::Arg *arg;
+    node::Args *args;
+    node::VarInit *varInit;
+    node::VarList *varList;
+    node::Expr *expr;
+	node::ExprList* exprList;
+    node::Cases *cases;
+    node::CaseStm *caseStm;
 }
 
 %token  LP RP LC RC RB LB
@@ -51,7 +56,7 @@
 %token<ival> INT
 %token<sval> ID 
 %token<type> TYPE
-%token<dval> FLOAT
+%token<fval> FLOAT
 %token<cval> CHAR
 
 %left   COMMA
@@ -68,18 +73,20 @@
 %left   MULT DIV MOD
 %right  BNOT NOT
 
-%type<root>							    Root	
+%type<root_>							    Root	
 %type<decl>								Decl FuncDecl VarDecl		
 %type<decls>							Decls	
-%type<stm>								Stm IfStm ForStm WhileStm DoStm SwitchStm CaseStm BreakStm ContinueStm ReturnStm
+%type<stm>								Stm IfStm ForStm WhileStm DoStm SwitchStm BreakStm ContinueStm ReturnStm
 %type<stms>							    Stms FuncBody
+%type<block>                            Block
 %type<arg>								Arg
 %type<args>							    Args
 %type<varInit>							VarInit	
 %type<varList>							VarList 
-%type<expr>								Expr Constant Block
+%type<expr>								Expr Constant 
 %type<exprList>							ExprList _ExprList
 %type<cases>							Cases
+%type<caseStm>							CaseStm
 %type<varType>							VarType 	
 
 %nonassoc IF
@@ -89,53 +96,53 @@
 
 %%
 
-Root:       Decls { $$ = new Root($1); }
+Root:       Decls { $$ = new  node::Root($1); root = $$; std::cout << "[parser root]: " << $$ << std::endl; }
             ;
 
 Decls:      Decls Decl  { $1->push_back($2);    $$ = $1; }
-            |           { $$ = new Decls(); }
+            |           { $$ = new  node::Decls(); }
             ;
 
 Decl:       VarDecl     { $$ = $1; }
             | FuncDecl  { $$ = $1; }
             ;
 
-VarDecl:    VarType VarList SEMI    { $$ = new VarDecl($1, $2); }
+VarDecl:    VarType VarList SEMI    { $$ = new  node::VarDecl($1, $2); }
             ;
 
 VarList:    VarList COMMA VarInit   { $$ = $1; $$->push_back($3); }
-           | VarInit                { $$ = new VarList(); $$->push_back($1); }
+           | VarInit                { $$ = new  node::VarList(); $$->push_back($1); }
            ;
      
-VarInit:    ID              { $$ = new VarInit(*$1); }
-            | ID EQU Expr   { $$ = new VarInit(*$1, $3); }
+VarInit:    ID              { $$ = new  node::VarInit(*$1); }
+            | ID EQU Expr   { $$ = new  node::VarInit(*$1, $3); }
             ;
 
-VarType:    TYPE                    { $$ = new VarType(type2int(*$1)); }
-            | TYPE PTR              { $$ = new PtrType(type2int(*$1)); }
-            | TYPE ARRAY LB INT RB  { $$ = new ArrayType(type2int(*$1), $4); }
+VarType:    TYPE                    { $$ = new  node::VarType(type2int(*$1)); }
+            | TYPE PTR              { $$ = new  node::PtrType(type2int(*$1)); }
+            | TYPE ARRAY LB INT RB  { $$ = new  node::ArrayType(type2int(*$1), $4); }
             ;
 
-FuncDecl:   VarType ID LP Args RP SEMI          { $$ = new FuncDecl($1, *$2, $4); }
-            | VarType ID LP Args RP FuncBody    { $$ = new FuncDecl($1, *$2, $4, $6); }
+FuncDecl:   VarType ID LP Args RP SEMI          { $$ = new  node::FuncDecl($1, *$2, $4); }
+            | VarType ID LP Args RP FuncBody    { $$ = new  node::FuncDecl($1, *$2, $4, $6); }
             ;
 
 FuncBody:	LC Stms RC              { $$ = $2;} 
             ;
 
 Args:       Args COMMA Arg  { $$ = $1; $$->push_back($3); }
-            |               { $$ = new Args(); }
+            |               { $$ = new  node::Args(); }
             ;
 
-Arg:        VarType ID      { $$ = new Args($1, *$2); }
-            | VarType       { $$ = new Args($1); }
+Arg:        VarType ID      { $$ = new  node::Arg($1, *$2); }
+            | VarType       { $$ = new  node::Arg($1); }
             ;  
 
 Stms:       Stms Stm        { $$ = $1; $$->push_back($2); }
-            |               { $$ = new Stms(); }
+            |               { $$ = new  node::Stms(); }
             ;
             
-Stm:        Expr SEMI           { $$ = new ExprStm($1); }
+Stm:        Expr SEMI           { $$ = new  node::ExprStm($1); }
             | ReturnStm         { $$ = $1; }
             | IfStm             { $$ = $1; }
             | WhileStm          { $$ = $1; }
@@ -149,90 +156,90 @@ Stm:        Expr SEMI           { $$ = new ExprStm($1); }
             | Block             { $$ = $1; }
             ;           
 
-Expr:         Expr PLUS Expr            { $$ = new BINOP($1, plus_, $3); }
-            | Expr SUB Expr     { $$ = new BINOP($1, sub_, $3); }
-            | Expr MULT Expr        { $$ = new BINOP($1, mult_, $3); }
-            | Expr DIV Expr     { $$ = new BINOP($1, div_, $3); }
-            | Expr MOD Expr     { $$ = new BINOP($1, mod_, $3); }
-            | Expr SHL Expr     { $$ = new BINOP($1, shl_, $3); }
-            | Expr SHR Expr         { $$ = new BINOP($1, shr_, $3); }
-            | Expr LT Expr      { $$ = new BINOP($1, lt_, $3); }
-            | Expr LE Expr      { $$ = new BINOP($1, le_, $3); }
-            | Expr EQ Expr      { $$ = new BINOP($1, eq_, $3); }
-            | Expr GE Expr      { $$ = new BINOP($1, ge_, $3); }
-            | Expr GT Expr      { $$ = new BINOP($1, gt_, $3); }
-            | Expr NE Expr      { $$ = new BINOP($1, ne_, $3); }
-            | Expr EQU Expr      { $$ = new BINOP($1, equ_, $3); }
-            | Expr ADDEQ Expr       { $$ = new BINOP($1, addeq_, $3); }
-            | Expr SUBEQ Expr       { $$ = new BINOP($1, subeq_, $3); }
-            | Expr DIVEQ Expr       { $$ = new BINOP($1, diveq_, $3); }
-            | Expr MULEQ Expr       { $$ = new BINOP($1, muleq_, $3); }
-            | Expr MODEQ Expr       { $$ = new BINOP($1, modeq_, $3); }
-            | Expr SHLEQ Expr       { $$ = new BINOP($1, shleq_, $3); }
-            | Expr SHREQ Expr       { $$ = new BINOP($1, shreq_, $3); }
-            | Expr AND Expr     { $$ = new BINOP($1, and_, $3); }
-            | Expr BAND Expr        { $$ = new BINOP($1, band_, $3); }
-            | Expr OR Expr      { $$ = new BINOP($1, or_, $3); }
-            | Expr BOR Expr     { $$ = new BINOP($1, bor_, $3); }
+Expr:         Expr PLUS Expr            { $$ = new  node::BINOP($1, node::plus_, $3); }
+            | Expr SUB Expr     { $$ = new  node::BINOP($1, node::sub_, $3); }
+            | Expr MULT Expr        { $$ = new  node::BINOP($1, node::mult_, $3); }
+            | Expr DIV Expr     { $$ = new  node::BINOP($1, node::div_, $3); }
+            | Expr MOD Expr     { $$ = new  node::BINOP($1, node::mod_, $3); }
+            | Expr SHL Expr     { $$ = new  node::BINOP($1, node::shl_, $3); }
+            | Expr SHR Expr         { $$ = new  node::BINOP($1, node::shr_, $3); }
+            | Expr LT Expr      { $$ = new  node::BINOP($1, node::lt_, $3); }
+            | Expr LE Expr      { $$ = new  node::BINOP($1, node::le_, $3); }
+            | Expr EQ Expr      { $$ = new  node::BINOP($1, node::eq_, $3); }
+            | Expr GE Expr      { $$ = new  node::BINOP($1, node::ge_, $3); }
+            | Expr GT Expr      { $$ = new  node::BINOP($1, node::gt_, $3); }
+            | Expr NE Expr      { $$ = new  node::BINOP($1, node::ne_, $3); }
+            | Expr EQU Expr      { $$ = new  node::BINOP($1, node::equ_, $3); }
+            | Expr ADDEQ Expr       { $$ = new  node::BINOP($1, node::addeq_, $3); }
+            | Expr SUBEQ Expr       { $$ = new  node::BINOP($1, node::subeq_, $3); }
+            | Expr DIVEQ Expr       { $$ = new  node::BINOP($1, node::diveq_, $3); }
+            | Expr MULEQ Expr       { $$ = new  node::BINOP($1, node::muleq_, $3); }
+            | Expr MODEQ Expr       { $$ = new  node::BINOP($1, node::modeq_, $3); }
+            | Expr SHLEQ Expr       { $$ = new  node::BINOP($1, node::shleq_, $3); }
+            | Expr SHREQ Expr       { $$ = new  node::BINOP($1, node::shreq_, $3); }
+            | Expr AND Expr     { $$ = new  node::BINOP($1, node::and_, $3); }
+            | Expr BAND Expr        { $$ = new  node::BINOP($1, node::band_, $3); }
+            | Expr OR Expr      { $$ = new  node::BINOP($1, node::or_, $3); }
+            | Expr BOR Expr     { $$ = new  node::BINOP($1, node::bor_, $3); }
             | LP Expr RP        { $$ = $2; }
-            | PLUS Expr %prec NOT   { $$ = new SOP($2, splus_); }
-            | SUB Expr  %prec NOT   { $$ = new SOP($2, ssub_); }
-            | NOT Expr              { $$ = new SOP($2, not_); }
-            | MULT Expr %prec NOT   { $$ = new SOP($2, smult_); }
-            | BNOT Expr %prec NOT   { $$ = new SOP($2, sbnot_); }
+            | PLUS Expr %prec NOT   { $$ = new  node::SOP($2, node::splus_); }
+            | SUB Expr  %prec NOT   { $$ = new  node::SOP($2, node::ssub_); }
+            | NOT Expr              { $$ = new  node::SOP($2, node::not_); }
+            | MULT Expr %prec NOT   { $$ = new  node::SOP($2, node::smult_); }
+            | BNOT Expr %prec NOT   { $$ = new  node::SOP($2, node::sbnot_); }
             | Constant             { $$ = $1; }
-            | ID                { $$ = new ID(*$1); }
-            | ID LB Expr RB     { $$ = new ArrayCall(*$1, $3); }
-            | ID LP ExprList RP { $$ = new FuncCall(*$1, $3); }
+            | ID                { $$ = new  node::Id(*$1); }
+            | ID LB Expr RB     { $$ = new  node::ArrayCall(*$1, $3); }
+            | ID LP ExprList RP { $$ = new  node::FuncCall(*$1, $3); }
             ;
 
 ExprList:	_ExprList COMMA Expr		{  $$ = $1; $$->push_back($3);   }
-			| Expr %prec ARGLIST	    {  $$ = new ExprList(); $$->push_back($1);   }
-			|							{  $$ = new ExprList();   }
+			| Expr %prec ARGLIST	    {  $$ = new  node::ExprList(); $$->push_back($1);   }
+			|							{  $$ = new  node::ExprList();   }
 			;
 
 _ExprList:	_ExprList COMMA Expr 		{  $$ = $1; $$->push_back($3);   }
-			| Expr %prec ARGLIST		{  $$ = new ExprList(); $$->push_back($1);   }
+			| Expr %prec ARGLIST		{  $$ = new  node::ExprList(); $$->push_back($1);   }
 			;
  
-Constant:   INT             { $$ = new Int($1); }
-            | CHAR          { $$ = new Char($1); }
-            | FLOAT         { $$ = new Float($1); }
+Constant:   INT             { $$ = new  node::Int($1); }
+            | CHAR          { $$ = new  node::Char($1); }
+            | FLOAT         { $$ = new  node::Float($1); }
             ; 
 
-ReturnStm:  RETURN Expr SEMI    { $<Stm>$ = new ReturnStm($2); }
-            RETURN SEMI         { $$ = new ReturnStm(NULL); }
+ReturnStm:  RETURN Expr SEMI    { $<stm>$ = new  node::ReturnStm($2); }
+            RETURN SEMI         { $$ = new  node::ReturnStm(NULL); }
             ;
 
-IfStm:      IF LP Expr RP Block ELSE Block  { $$ = new IfStm($3, $5, $7, true); }
-            | IF LP Expr RP Block           { $$ = new IfStm($3, $5, NULL, false); }
+IfStm:      IF LP Expr RP Block ELSE Block  { $$ = new  node::IfStm($3, $5, $7, true); }
+            | IF LP Expr RP Block           { $$ = new  node::IfStm($3, $5, NULL, false); }
             ;
-ForStm:     FOR LP Expr SEMI Expr SEMI Expr RP Block    { $$ = new ForStm($3, $5, $7, $9); }
+ForStm:     FOR LP Expr SEMI Expr SEMI Expr RP Block    { $$ = new  node::ForStm($3, $5, $7, $9); }
 
-WhileStm:   WHILE LP Expr RP Block  { $$ = new WhileStm($3, $5); }
-            ;
-
-DoStm:      DO Block WHILE LP Expr RP SEMI  { $$ = new DoStm($5, $2); }
+WhileStm:   WHILE LP Expr RP Block  { $$ = new  node::WhileStm($3, $5); }
             ;
 
-SwitchStm:  SWITCH LP Expr RP LC Cases RC   { $$ = new SwitchStm($3, $6); }
+DoStm:      DO Block WHILE LP Expr RP SEMI  { $$ = new  node::DoStm($5, $2); }
             ;
 
-CaseStm:    CASE Expr COLON Stms            { $$ = new CaseStm($2, $4); }
-            | DEFAULT COLON Stms       { $$ = new CaseStm(NULL, $3); }
+SwitchStm:  SWITCH LP Expr RP LC Cases RC   { $$ = new  node::SwitchStm($3, $6); }
+            ;
+
+CaseStm:    CASE Expr COLON Stms       { $$ = new  node::CaseStm($2, $4); }
+            | DEFAULT COLON Stms       { $$ = new  node::CaseStm(NULL, $3); }
             ;
  
-ContinueStm:CONTINUE SEMI   { $$ = new ContinueStm(); }
+ContinueStm:CONTINUE SEMI   { $$ = new  node::ContinueStm(); }
             ;
 
-BreakStm:   BREAK SEMI      { $$ = new BreakStm(); }
+BreakStm:   BREAK SEMI      { $$ = new  node::BreakStm(); }
             ;
 
 Cases:      Cases CaseStm   { $$ = $1; $$->push_back($2); }
-            |               { $$ = new Cases(); }
+            |               { $$ = new  node::Cases(); }
             ;
 
-Block:      LC Stms RC    { $$ = new Block($2); }    
+Block:      LC Stms RC    { $$ = new  node::Block($2); }    
             ;
 
 %%

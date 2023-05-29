@@ -532,12 +532,12 @@ char *yytext;
  *  yyleng      当前lex的长度
  *  yylex       即这部分的函数
 */
-    //#include "node.hpp"
+    #include "node.hpp"
     #include "parser.hpp"
-    #include <stdio.h>
     #include <string>
     #include <iostream>
     extern "C" int yywrap() {return 1;}
+    // extern yyleng;
     using namespace std;
 #line 543 "lexer.cpp"
 #line 544 "lexer.cpp"
@@ -793,16 +793,12 @@ yy_match:
 			yy_current_state = yy_nxt[yy_base[yy_current_state] + yy_c];
 			++yy_cp;
 			}
-		while ( yy_base[yy_current_state] != 137 );
+		while ( yy_current_state != 122 );
+		yy_cp = (yy_last_accepting_cpos);
+		yy_current_state = (yy_last_accepting_state);
 
 yy_find_action:
 		yy_act = yy_accept[yy_current_state];
-		if ( yy_act == 0 )
-			{ /* have to back up */
-			yy_cp = (yy_last_accepting_cpos);
-			yy_current_state = (yy_last_accepting_state);
-			yy_act = yy_accept[yy_current_state];
-			}
 
 		YY_DO_BEFORE_ACTION;
 
@@ -1104,7 +1100,7 @@ YY_RULE_SETUP
 #line 84 "lexer.l"
 ECHO;
 	YY_BREAK
-#line 1108 "lexer.cpp"
+#line 1104 "lexer.cpp"
 case YY_STATE_EOF(INITIAL):
 	yyterminate();
 
@@ -1171,7 +1167,8 @@ case YY_STATE_EOF(INITIAL):
 
 			else
 				{
-				yy_cp = (yy_c_buf_p);
+				yy_cp = (yy_last_accepting_cpos);
+				yy_current_state = (yy_last_accepting_state);
 				goto yy_find_action;
 				}
 			}
@@ -1686,7 +1683,7 @@ static void yy_load_buffer_state  (void)
         b->yy_bs_column = 0;
     }
 
-        b->yy_is_interactive = file ? (isatty( fileno(file) ) > 0) : 0;
+        b->yy_is_interactive = 0;
     
 	errno = oerrno;
 }

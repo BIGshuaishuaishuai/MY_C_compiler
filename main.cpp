@@ -1,20 +1,21 @@
 #include <iostream>
 #include "CodeTran.hpp"
-#include "node.hpp"
+
 
 using namespace std;
 
 extern int yyparse();
-extern Root* root;
+extern node::Root* root;
 
 int main(int argc, char **argv)
 {
-    yyparse();
-    std::cout << root << std::endl;
+    std::cout << "[main starts]"<< std::endl;
+    yyparse(); 
+    std::cout<<"[paerser done]"<<std::endl;
 
-    CodeContext context;
-    context.generateCode(*root);
-    context.runCode();
+    CodeContext codecontext;
+    codecontext.CreateContext(root);
+    // context.runCode();
     
     return 0;
 }
