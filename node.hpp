@@ -253,7 +253,7 @@ namespace node{
         llvm::Value* CodeGen(CodeContext& context);
     };
 
-    class CaseStm : public Stm{
+    class CaseStm : public Stm {
     public:
         Expr* _expr;
         Stms* _stms;
@@ -294,7 +294,7 @@ namespace node{
         llvm::Value* CodeGen(CodeContext& context){}
     };
 
-    class Block : public Stm {
+    class Block : public Stm{
     public:
         Stms* _statements;
         Block(Stms* __s): _statements(__s) { }
