@@ -291,7 +291,7 @@ namespace node{
         Expr* _expr;
         ExprStm(Expr* __expr): _expr(__expr) {}
         ~ExprStm(){}
-        llvm::Value* CodeGen(CodeContext& context){}
+        llvm::Value* CodeGen(CodeContext& context);
     };
 
     class Block : public Stm{

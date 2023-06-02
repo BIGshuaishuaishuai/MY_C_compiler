@@ -60,10 +60,14 @@ private:
     CodeBlock* head_block;
     CodeBlock* tail_block;
     Function* mainfunction;
+
 public:
     Module *module;
     IRBuilder<> builder;
-    CodeContext(): module(new Module("main",Context)),head_block(NULL),tail_block(NULL),mainfunction(NULL),builder(IRBuilder<>(Context)) {}
+    int opnums;
+    int fors;
+    int blocks;
+    CodeContext(): module(new Module("main",Context)),head_block(NULL),tail_block(NULL),mainfunction(NULL),builder(IRBuilder<>(Context)) {opnums = 0;fors = 0;blocks = 0;}
     void CreateContext(node::Root* root);
     GenericValue runCode();
     CodeBlock* HeadBlock(){return head_block;}
