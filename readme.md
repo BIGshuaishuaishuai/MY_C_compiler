@@ -152,3 +152,26 @@ Value类包含多个成员, 这里先介绍最重要的三个成员VTy, UseList�
 3. 另外一个重要的成员是SubclassID, 这是一个const值, 用来指示这个Value的子类型. 其用于isa<>与dyn_cast<>的判断.
 
 注意SubclassID的定义比较古怪, 对于基类类型其值定义见枚举ValueTy(该枚举由Value.def宏展开生成), 而继承类的值的定义则需见继承类中的枚举定义. 更多细节参见**[这里](https://www.cnblogs.com/Five100Miles/p/13765578.html)**.
+
+文件结构：
+```shell
+.
+|-- CodeTran.cpp
+|-- CodeTran.hpp
+|-- CodeTran.o
+|-- Makefile
+|-- lexer.cpp
+|-- lexer.l
+|-- lexer.o
+|-- main.cpp
+|-- node.hpp
+|-- parser
+|-- parser.cpp
+|-- parser.hpp
+|-- parser.o
+|-- parser.y
+|-- readme.md
+|-- report.md
+|-- test_0.c
+`-- test_1.c
+```
