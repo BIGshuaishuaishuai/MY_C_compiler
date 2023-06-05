@@ -13,25 +13,13 @@ extern node::Root* root;
 void CodeContext::CreateContext(node::Root* root){
     std::cout << "Generating code...\n";
     // std::cout << this << ":"<< root << std::endl;
-
     /* Create the top level interpreter function to call as entry */
-    vector<Type*> argTypes;
-    FunctionType *ftype = FunctionType::get(Type::getVoidTy(Context), argTypes, false);
-    Function* mainFunction = Function::Create(ftype, GlobalValue::InternalLinkage, "main", module);
-    BasicBlock *bblock = BasicBlock::Create(Context,"entry", mainFunction, 0);
-    // std::cout << "[Create BBlock]"<<std::endl;
-    CodeBlock* tmp = new CodeBlock();
-    tmp->codeblock = bblock;
-    // std::cout << "[Ins starts]"<<std::endl;
-    
-    InsBlock(tmp);
+
     // std::cout << "[Root start]"<<std::endl;
-    
     CodeContext &tmp_ = *this;
     // std::cout << "[Root 1]"<<std::endl;
     std::cout << this << ":"<< root << std::endl;
     root->CodeGen(tmp_);
-    RmTailBlock();
     std::cout << "Code is generated.\n"<<std::endl;
     module->print(outs(), nullptr);
 
@@ -59,9 +47,11 @@ static Type *typeOf(const VarType& type)
 Value* Root::CodeGen(CodeContext& context){
     std::cout<<INFO<<"Into CodeGen"<<std::endl; 
     Value* last = NULL;
+    context.cur_vars = context.global_vars;
     // std::cout<<INFO<<"Into CodeGen"<<std::endl; 
+    std::cout<<INFO<<"into for"<<std::endl;
     for (auto it = _decls->begin(); it != _decls->end();it++) {
-        std::cout<<INFO<<"into for"<<std::endl;
+        
         auto pt = *it;
         std::cout <<INFO<<"Generating the "<<std::endl;
         last = pt->CodeGen(context);
@@ -73,6 +63,12 @@ Value* FuncDecl::CodeGen(CodeContext& context){
     vector<Type*> argtypes;
     Args::const_iterator it;
     FunctionType* ftype_ = NULL;
+    std::cout << "Generating function: " << _FuncName<< std::endl;
+
+    if (context.func_table.find(_FuncName) != context.func_table.end()){
+        std::cerr << "declared function " << _FuncName << endl;
+        return NULL;
+    }
     for (it = _args->begin(); it != _args->end();it++) {
         argtypes.push_back(typeOf(((**it)._Type)->_type));
     }
@@ -82,16 +78,28 @@ Value* FuncDecl::CodeGen(CodeContext& context){
     else {
         ftype_ = FunctionType::get(typeOf(_Type->_type),argtypes,false);
     }
+    std::cout<<INFO<<"Here?"<<std::endl;
     Function * func = Function::Create(ftype_,GlobalValue::InternalLinkage,_FuncName.c_str(),context.module);
-    BasicBlock *bblock = BasicBlock::Create(Context,"entry", func, 0);
-
+    BasicBlock *bblock = BasicBlock::Create(Context,_FuncName.c_str(), func, 0);
     CodeBlock* tmp = new CodeBlock();
     tmp->codeblock = bblock;
+    std::cout<<INFO<<"Here?"<<std::endl;
+
+    context.cur_vars = tmp->local_vars;
+    std::cout<<INFO<<"Here?"<<std::endl;
+    context.func_table[_FuncName.c_str()] = tmp;
+    std::cout<<INFO<<"Here?"<<std::endl;
     context.InsBlock(tmp);
 
-    for (it = _args->begin(); it != _args->end();it++) {
-        (*it)->CodeGen(context);
+    std::cout<<INFO<<"Here?"<<std::endl;
+    if (_args!=NULL){
+        std::cout<<INFO<<"not null"<<std::endl;    
+        for (it = _args->begin(); it != _args->end();it++) {
+            (*it)->CodeGen(context);
+        }
     }
+        
+    std::cout<<INFO<<"Here?"<<std::endl;
 
     Value* last = NULL;
     Stms::const_iterator it_;
@@ -482,11 +490,14 @@ Value* Int::CodeGen(CodeContext& context){
 Value* Id::CodeGen(CodeContext& context){
     std::cout << "Generating identifier reference: " << _name << endl;
     std::map<std::string , Value*>& vars = context.localvars();
-    if (vars.find(_name) == vars.end()) {
+    if (vars.find(_name) == vars.end() and context.global_vars.find(_name) == context.global_vars.end()) {
         std::cerr << "undeclared variable " << _name << endl;
         return NULL;
     }
-    LoadInst* load = context.builder.CreateLoad(vars[_name]);
+
+    LoadInst* load = NULL;
+    if (vars.find(_name) != vars.end() )load = context.builder.CreateLoad(vars[_name]);
+    else load = context.builder.CreateLoad(context.global_vars[_name]);
     auto res = load->getPointerOperand ();
     llvm::Type *Ty = res->getType();
     llvm::Constant *C = NULL;

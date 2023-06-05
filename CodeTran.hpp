@@ -64,15 +64,19 @@ private:
 public:
     Module *module;
     IRBuilder<> builder;
+    std::map<std::string, Value*> global_vars;
+    std::map<std::string, CodeBlock*> func_table;
+    std::map<std::string, Value*>& cur_vars;
+
     int opnums;
     int fors;
     int blocks;
-    CodeContext(): module(new Module("main",Context)),head_block(NULL),tail_block(NULL),mainfunction(NULL),builder(IRBuilder<>(Context)) {opnums = 0;fors = 0;blocks = 0;}
+    CodeContext(): module(new Module("main",Context)),head_block(NULL),tail_block(NULL),mainfunction(NULL),builder(IRBuilder<>(Context)),cur_vars(global_vars) {opnums = 0;fors = 0;blocks = 0;}
     void CreateContext(node::Root* root);
     GenericValue runCode();
     CodeBlock* HeadBlock(){return head_block;}
     CodeBlock* TailBlock(){return tail_block;}
-    std::map<std::string , Value*>& localvars() { return tail_block->local_vars; }
+    std::map<std::string , Value*>& localvars() { return cur_vars; }
     void InsBlock(CodeBlock* new_block){
         if (head_block == NULL){
             head_block = new_block;
@@ -89,7 +93,7 @@ public:
         if (head_block != NULL){
             auto tmp = head_block;
             head_block = head_block->next;
-            free(tmp);
+            if (tmp != NULL)free(tmp);
         }
         else{
             printf("No head! The Context is empty");
@@ -99,8 +103,11 @@ public:
     void RmTailBlock(){
         if (tail_block != NULL){
             auto tmp = tail_block;
-            tail_block = tail_block->prev;
-            free(tmp);
+            auto prev = tail_block->prev;
+            if (prev == NULL) head_block = NULL;
+            else prev->next = tmp->next;
+            tail_block = prev;
+            if (tmp != NULL)free(tmp);
         }
         else{
             printf("No tail! The Context is empty");

@@ -1,4 +1,4 @@
-void quicksort(int* arr, int left, int right) {
+void quicksort(int ptr arr, int left, int right) {
     if (left < right){
         int i = left, j = right, pivot = arr[left];  // 初始化基准元素
         while (i < j) {
@@ -15,10 +15,10 @@ void quicksort(int* arr, int left, int right) {
 }
 
 int main(){
-    int arr[9] = {5, 2, 8, 3, 6, 1, 9, 4, 7};
-    int len = sizeof(arr) / sizeof(int);
-    quicksort(arr, 0, len - 1);
+    int array[9] arr = {5, 2, 8, 3, 6, 1, 9, 4, 7};
+    int len = 9;
+    // quicksort(arr, 0, len - 1);
     for (int i = 0; i < len; i++) {
-        printf("%d ", arr[i]);
+        arr[i];
     }
 }
