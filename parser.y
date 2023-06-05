@@ -117,6 +117,7 @@ VarList:    VarList COMMA VarInit   { $$ = $1; $$->push_back($3); }
      
 VarInit:    ID              { $$ = new  node::VarInit(*$1, yylineno); }
             | ID EQU Expr   { $$ = new  node::VarInit(*$1, $3, yylineno); }
+            | ID EQU LC ExprList RC { $$ = new node::VarInit(*$1, $4, yylineno); }
             ;
 
 VarType:    TYPE                    { $$ = new  node::VarType(type2int(*$1), yylineno); }

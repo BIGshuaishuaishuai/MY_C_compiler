@@ -158,11 +158,14 @@ namespace node{
     public:
         std::string _id;
         Expr* _initvaL;
+        ExprList* _arrayinit;
 
         VarInit(const std::string& __id, int line) :
-            _id(__id), _initvaL(NULL), Node(line) {}
+            _id(__id), _initvaL(NULL), Node(line), _arrayinit(NULL) {}
         VarInit(const std::string& __id, Expr* __initvaL, int line) :
-            _id(__id), _initvaL(__initvaL), Node(line) {}
+            _id(__id), _initvaL(__initvaL), Node(line),  _arrayinit(NULL) {}
+        VarInit(const std::string& __id, ExprList* __arrayinit, int line) :
+            _id(__id), _arrayinit(__arrayinit), Node(line), _initvaL(NULL) {}    
         ~VarInit() {}
         llvm::Value* CodeGen(CodeContext& context){}
     };
