@@ -1,5 +1,7 @@
 #include "node.hpp"
 #include "CodeTran.hpp"
+#include <array>
+#include <vector>
 
 using namespace std;
 using namespace node;
@@ -12,32 +14,24 @@ extern node::Root* root;
 
 void CodeContext::CreateContext(node::Root* root){
     std::cout << "Generating code...\n";
-    // std::cout << this << ":"<< root << std::endl;
-    /* Create the top level interpreter function to call as entry */
-
-    // std::cout << "[Root start]"<<std::endl;
     CodeContext &tmp_ = *this;
     // std::cout << "[Root 1]"<<std::endl;
     std::cout << this << ":"<< root << std::endl;
     root->CodeGen(tmp_);
     std::cout << "Code is generated.\n"<<std::endl;
     module->print(outs(), nullptr);
-
-    // PassManager pm;
-    // pm.add(createPrintModulePass(&outs()));
-    // pm.run(*module);
 }
 
 
-static Type *typeOf(const VarType& type)
+static Type *typeOf(const VarType* type)
 {
-    if (type._type == 3) {
+    if (type->_type == 3) {
         return Type::getInt64Ty(Context);
     }
-    else if (type._type == 2) {
+    else if (type->_type == 2) {
         return Type::getDoubleTy(Context);
     }
-    else if (type._type == 1) {
+    else if (type->_type == 1) {
         return Type::getInt8Ty(Context);
     }
     
@@ -70,37 +64,28 @@ Value* FuncDecl::CodeGen(CodeContext& context){
         return NULL;
     }
     for (it = _args->begin(); it != _args->end();it++) {
-        argtypes.push_back(typeOf(((**it)._Type)->_type));
+        argtypes.push_back(typeOf(((**it)._Type)));
     }
     if (argtypes.size() == 0){
-        ftype_ = FunctionType::get(typeOf(_Type->_type),false);
+        ftype_ = FunctionType::get(typeOf(_Type),false);
     }
     else {
-        ftype_ = FunctionType::get(typeOf(_Type->_type),argtypes,false);
+        ftype_ = FunctionType::get(typeOf(_Type),argtypes,false);
     }
-    std::cout<<INFO<<"Here?"<<std::endl;
+    // std::cout<<INFO<<"Here?"<<std::endl;
     Function * func = Function::Create(ftype_,GlobalValue::InternalLinkage,_FuncName.c_str(),context.module);
     BasicBlock *bblock = BasicBlock::Create(Context,_FuncName.c_str(), func, 0);
     CodeBlock* tmp = new CodeBlock();
     tmp->codeblock = bblock;
-    std::cout<<INFO<<"Here?"<<std::endl;
-
     context.cur_vars = tmp->local_vars;
-    std::cout<<INFO<<"Here?"<<std::endl;
     context.func_table[_FuncName.c_str()] = tmp;
-    std::cout<<INFO<<"Here?"<<std::endl;
     context.InsBlock(tmp);
-
-    std::cout<<INFO<<"Here?"<<std::endl;
     if (_args!=NULL){
         std::cout<<INFO<<"not null"<<std::endl;    
         for (it = _args->begin(); it != _args->end();it++) {
             (*it)->CodeGen(context);
         }
     }
-        
-    std::cout<<INFO<<"Here?"<<std::endl;
-
     Value* last = NULL;
     Stms::const_iterator it_;
     for (it_ = _fb->begin(); it_ != _fb->end();it_++) {
@@ -109,7 +94,7 @@ Value* FuncDecl::CodeGen(CodeContext& context){
         last = pt->CodeGen(context);
     }
     std::cout << "Genetated function body"<<std::endl;
-
+    bblock = context.TailBlock()->codeblock;
     ReturnInst::Create(Context,bblock);
     context.RmTailBlock();
     std::cout << "Generated function: " << _FuncName<< std::endl;
@@ -117,13 +102,15 @@ Value* FuncDecl::CodeGen(CodeContext& context){
 }
 Value* Arg::CodeGen(CodeContext& context){
     std::cout << "Generate arg:" << tps[_Type->_type]<< " " << _Name << endl;
-    AllocaInst *alloc = new AllocaInst(typeOf(_Type->_type), 0,_Name.c_str(), context.TailBlock()->codeblock);
+    AllocaInst *alloc = new AllocaInst(typeOf(_Type), 0,_Name.c_str(), context.TailBlock()->codeblock);
     std::map<std::string , Value*>& vars = context.localvars();
     vars[_Name] = alloc; 
     return alloc;
 }
 Value* VarDecl::CodeGen(CodeContext& context){
-    Type * typ = typeOf(_Type->_type);
+    Type * typ = typeOf(_Type);
+
+    // if (_Type->_array) 
     // std::cout<<"Type:"<<_Type->_type<<std::endl;
     VarList::const_iterator it;
     Value *alloc = NULL;
@@ -131,25 +118,61 @@ Value* VarDecl::CodeGen(CodeContext& context){
 
     for (it = _list->begin();it != _list->end();it++){
         std::cout << "Generate var:" << " " << (*it)->_id <<" var"<< endl;
-        alloc = new AllocaInst(typ,0, (*it)->_id.c_str(), context.TailBlock()->codeblock);
+        if (_Type->_array == true) {
+            auto new_pt = static_cast<ArrayType*>(_Type); //正确，通过使用static_cast向下转型
+            int arrnum = new_pt->_num;
+
+            std::vector<llvm::Constant*> tmp;
+            llvm::ArrayType* arrType = llvm::ArrayType::get(typ, arrnum);
+            alloc = context.builder.CreateAlloca(arrType);
+
+            if ((*it)->_arrayinit != NULL){
+                for (int i = 0;i < (*it)->_arrayinit->size();i++){
+                    Value* index = ConstantInt::get(Type::getInt32Ty(Context), i);
+                    Value* val = (*((*it)->_arrayinit))[i] -> CodeGen(context);
+                    Value* ptr = context.builder.CreateGEP(alloc, {ConstantInt::get(Type::getInt32Ty(Context), 0), index});
+                    context.builder.CreateStore(val, ptr);
+                }
+            }
+        }
+        else if (_Type->_ptr == true){
+            alloc = context.builder.CreateAlloca(context.builder.getInt64Ty());
+            if ((*it)->_initvaL != NULL) {
+                std::cout << "Generating assignment for " << (*it)->_id <<" var"<< endl;
+                // std::cout << "vars: "<<vars[(*it)->_id]<<std::endl;
+                // std::cout << "tailblock: "<<context.TailBlock()<<std::endl;
+                // std::cout << "tail bblock: "<<context.TailBlock()->codeblock<<std::endl;
+                auto ret = ((*it)->_initvaL)->CodeGen(context);
+                // std::cout << "ret val:" << ret<<std::endl;
+                // std::cout << "alloc val:" << alloc<<std::endl;
+                
+                new StoreInst(ret, alloc, false, context.TailBlock()->codeblock);
+            }
+        }
+        else {
+            alloc = new AllocaInst(typ,0, (*it)->_id.c_str(), context.TailBlock()->codeblock);
+           
+            if ((*it)->_initvaL != NULL) {
+                std::cout << "Generating assignment for " << (*it)->_id <<" var"<< endl;
+                // std::cout << "vars: "<<vars[(*it)->_id]<<std::endl;
+                // std::cout << "tailblock: "<<context.TailBlock()<<std::endl;
+                // std::cout << "tail bblock: "<<context.TailBlock()->codeblock<<std::endl;
+                auto ret = ((*it)->_initvaL)->CodeGen(context);
+                // std::cout << "ret val:" << ret<<std::endl;
+                // std::cout << "alloc val:" << alloc<<std::endl;
+                
+                new StoreInst(ret, alloc, false, context.TailBlock()->codeblock);
+                // std::cout << (*it)->_id << "Generated done"<<endl;
+                
+            }
+
+            std::cout<<INFO<<"cur vars"<<std::endl;
+            for (auto &t : vars){
+                std::cout<<INFO<<t.first<<":"<<t.second<<std::endl;
+            }
+        }
         vars[(*it)->_id] = alloc;
-        if ((*it)->_initvaL != NULL) {
-            std::cout << "Generating assignment for " << (*it)->_id <<" var"<< endl;
-            // std::cout << "vars: "<<vars[(*it)->_id]<<std::endl;
-            // std::cout << "tailblock: "<<context.TailBlock()<<std::endl;
-            // std::cout << "tail bblock: "<<context.TailBlock()->codeblock<<std::endl;
-            auto ret = ((*it)->_initvaL)->CodeGen(context);
-            // std::cout << "ret val:" << ret<<std::endl;
-            // std::cout << "alloc val:" << alloc<<std::endl;
-            
-            new StoreInst(ret, alloc, false, context.TailBlock()->codeblock);
-            // std::cout << (*it)->_id << "Generated done"<<endl;
-            
-        }
-        std::cout<<INFO<<"cur vars"<<std::endl;
-        for (auto &t : vars){
-            std::cout<<INFO<<t.first<<":"<<t.second<<std::endl;
-        }
+        
     }
     return alloc;
 }
@@ -158,26 +181,38 @@ Value* IfStm::CodeGen(CodeContext& context){
     BasicBlock *curblock = context.TailBlock()->codeblock;
     Function *func = curblock->getParent();
     context.builder.SetInsertPoint(curblock);
-    BasicBlock *entry = BasicBlock::Create(Context, "entry", func);
-    BasicBlock *exit_ = BasicBlock::Create(Context, "exit", func);
     
-    context.builder.SetInsertPoint(entry);
+    BasicBlock *entry = BasicBlock::Create(Context, (string("entry_") + to_string((context.fors++))).c_str(), func);
+    context.builder.CreateBr(entry);
+    BasicBlock *exit_ = BasicBlock::Create(Context, (string("exit_") + to_string((context.fors++))).c_str(), func);
+    
+    
     CodeBlock* tmp_ = new CodeBlock();
     tmp_->codeblock = entry;
     tmp_->local_vars = context.TailBlock()->local_vars;
-
     context.InsBlock(tmp_);
+    // std::cout<<INFO<<"if here??"<<std::endl;
     BasicBlock *ifBB = (BasicBlock*)(_ifStm->CodeGen(context));
+    context.builder.SetInsertPoint(ifBB);
+    context.builder.CreateBr(exit_);
+    
     BasicBlock *elseBB = exit_;
     if (_ifelse){
         elseBB = (BasicBlock*)_elseifStm->CodeGen(context);
+        context.builder.SetInsertPoint(elseBB);
+        context.builder.CreateBr(exit_);
     }
-    
+
+    context.builder.SetInsertPoint(entry);
     context.builder.CreateCondBr(_switch->CodeGen(context), ifBB, elseBB);
     context.RmTailBlock();
-    CodeBlock* tool = new CodeBlock();
+
+    CodeBlock *tool = new CodeBlock();
     tool->codeblock = exit_;
+    // tool ->cur_vars = context.TailBlock()->localvars();
     tool ->local_vars = context.TailBlock()->local_vars;
+    // tool ->global_vars = context.TailBlock()->global_vars;
+    context.RmTailBlock();
     context.InsBlock(tool);
     context.builder.SetInsertPoint(exit_);
 
@@ -194,6 +229,7 @@ Value* ForStm::CodeGen(CodeContext& context){
 
     // 在entry块中添加跳转指令，跳转到loop块
     context.builder.SetInsertPoint(entry);
+
     Value* init = NULL;
     if (_expr1) init = _expr1->CodeGen(context);
     std::cout<<INFO<<"COND 1 DONE"<<std::endl;
@@ -209,7 +245,6 @@ Value* ForStm::CodeGen(CodeContext& context){
     context.builder.CreateBr(step_);
     std::cout<<INFO<<"STEP 2 DONE"<<std::endl;
     
-
     // 在step块中添加i++的指令，跳转到loop块
     context.builder.SetInsertPoint(step_);
     Value* cmp = NULL;
@@ -223,8 +258,10 @@ Value* ForStm::CodeGen(CodeContext& context){
     // 在exit块中添加返回指令
     CodeBlock *tool = new CodeBlock();
     tool->codeblock = exit_;
+    // tool ->cur_vars = context.TailBlock()->localvars();
     tool ->local_vars = context.TailBlock()->local_vars;
-
+    // tool ->global_vars = context.TailBlock()->global_vars;
+    context.RmTailBlock();
     context.InsBlock(tool);
     context.builder.SetInsertPoint(exit_);
     return res;
@@ -235,28 +272,31 @@ Value* WhileStm::CodeGen(CodeContext& context){
     Value*init = _expr->CodeGen(context);
     BasicBlock* curblock = context.TailBlock()->codeblock;
     Function* func = curblock->getParent();
-
+    // BasicBlock *entry = context.builder.CreateBasicBlock
     BasicBlock *loop_ = (BasicBlock*)(_block->CodeGen(context));
-    
-    BasicBlock *exit_ = BasicBlock::Create(Context, "exit", func);
-    
+    BasicBlock *entry_ = BasicBlock::Create(Context, (string("entry_") + to_string(context.fors++)).c_str(), func);
+    BasicBlock *exit_ = curblock;
+
 
     context.builder.SetInsertPoint(curblock);
-    context.builder.CreateBr(loop_);
-    context.builder.SetInsertPoint(loop_);
+    context.builder.CreateBr(entry_);
+    context.builder.SetInsertPoint(entry_);
 
     Value *cmp = _expr->CodeGen(context);
     context.builder.CreateCondBr(cmp, loop_, exit_);
+    context.builder.SetInsertPoint(loop_);
+    context.builder.CreateBr(entry_);
 
-    // 在exit块中添加返回指令
+
     CodeBlock *tool = new CodeBlock();
     tool->codeblock = exit_;
-    
+    // tool ->cur_vars = context.TailBlock()->localvars();
     tool ->local_vars = context.TailBlock()->local_vars;
-
+    // tool ->global_vars = context.TailBlock()->global_vars;
+    context.RmTailBlock();
     context.InsBlock(tool);
     context.builder.SetInsertPoint(exit_);
-    // 创建条件判断的基本块
+
     return res;
 }
 Value* DoStm::CodeGen(CodeContext& context){
@@ -278,7 +318,7 @@ Value* SwitchStm::CodeGen(CodeContext& context){
     int len = _cases->size();
     context.builder.SetInsertPoint(entry);
     Value* val = _expr->CodeGen(context); 
-    BasicBlock *exit_ = BasicBlock::Create(Context, "exit", func);
+    BasicBlock *exit_ = curblock;
     SwitchInst *switchInst = context.builder.CreateSwitch(val, exit_, len);
     Value* last = NULL;
     for (int i = 0;i < len;i++){
@@ -289,6 +329,9 @@ Value* SwitchStm::CodeGen(CodeContext& context){
         switchInst->addCase(dyn_cast<llvm::ConstantInt>((pt->_expr->CodeGen(context))), case_);
         context.InsBlock(tmp);
         context.builder.SetInsertPoint(case_);
+        // tmp ->cur_vars = context.TailBlock()->localvars();
+        tmp ->local_vars = context.TailBlock()->local_vars;
+        // tmp ->global_vars = context.TailBlock()->global_vars;
         last = pt->CodeGen(context);
         context.builder.CreateBr(exit_);
         context.RmTailBlock();
@@ -297,10 +340,18 @@ Value* SwitchStm::CodeGen(CodeContext& context){
     context.RmTailBlock();
     CodeBlock *tool = new CodeBlock();
     tool->codeblock = exit_;
+    // tool ->cur_vars = context.TailBlock()->localvars();
     tool ->local_vars = context.TailBlock()->local_vars;
-
+    // tool ->global_vars = context.TailBlock()->global_vars;
+    context.RmTailBlock();
     context.InsBlock(tool);
     context.builder.SetInsertPoint(exit_);
+    // CodeBlock *tool = new CodeBlock();
+    // tool->codeblock = exit_;
+    // tool ->local_vars = context.TailBlock()->local_vars;
+
+    // context.InsBlock(tool);
+    // context.builder.SetInsertPoint(exit_);
 
     return last;
 }
@@ -401,7 +452,10 @@ Value* BINOP::CodeGen(CodeContext& context){
     Value* op1, *op2;
     int math = 0,cmp = 0;
     auto pt = rhs;
-    auto new_pt= dynamic_cast<Id*>(lhs);
+    Id* new_pt= NULL;
+    if (lhs == NULL)std::cout<<INFO<<"LHS NULL"<<op<<std::endl;
+    if (rhs == NULL)std::cout<<INFO<<"RHS NULL"<<op<<std::endl;
+    
     std::cout<<INFO<<"op:"<<op<<std::endl;
     switch (op)
     {
@@ -428,12 +482,14 @@ Value* BINOP::CodeGen(CodeContext& context){
         case 12:return context.builder.CreateICmpUGT(INTCAST(lhs->CodeGen(context)),INTCAST(rhs->CodeGen(context)),(string("gt_") + to_string(context.opnums++)).c_str());
         case 13:return context.builder.CreateICmpNE (INTCAST(lhs->CodeGen(context)),INTCAST(rhs->CodeGen(context)),(string("ne_") + to_string(context.opnums++)).c_str());
         case 14:
-            
-            std::cout << "Creating assignment for " << new_pt->_name<<" var"<<std::endl;
+            new_pt = (Id*)lhs;
             std::cout<<INFO<<"cur vars"<<std::endl;
             for (auto &t : vars){
                 std::cout<<INFO<<t.first<<":"<<t.second<<std::endl;
             }
+            if (new_pt == NULL) std::cout<<INFO<<"NULL"<<std::endl;
+            std::cout<< "Creating assignment for " << new_pt->_name<<" var"<<std::endl;
+            
             
             if (vars.find(new_pt->_name) == vars.end()) {
                 std::cerr << "undeclared variable " << std::endl;
@@ -467,7 +523,20 @@ Value* FuncCall::CodeGen(CodeContext& context){
     return call;
 }
 Value* ArrayCall::CodeGen(CodeContext& context){
-
+    std::cout<<"Creating the array call: "<<_id<<std::endl;
+    auto cur_vars = context.localvars();
+    Value* alloc = NULL;
+    if (cur_vars.find(_id) == cur_vars.end() and context.global_vars.find(_id) == context.global_vars.end()){
+        std::cerr << "undeclared variable " << std::endl;
+        return NULL;
+    }
+    if (cur_vars.find(_id) != cur_vars.end()) alloc = cur_vars[_id];
+    else alloc = context.global_vars[_id];
+    // auto alloc = cur_vars
+    Value *idx = _num->CodeGen(context);
+    Value* ptr = context.builder.CreateGEP(alloc,  idx);
+    LoadInst *load = context.builder.CreateLoad(ptr);
+    return load;
 }
 Value* Char::CodeGen(CodeContext& context){
     std::cout << "Creating char: " << _value << endl;

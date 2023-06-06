@@ -81,7 +81,7 @@
 %type<stms>							    Stms FuncBody
 %type<block>                            Block
 %type<arg>								Arg
-%type<args>							    Args
+%type<args>							    Args _Args
 %type<varInit>							VarInit	
 %type<varList>							VarList 
 %type<expr>								Expr Constant 
@@ -97,7 +97,7 @@
 
 %%
 
-Root:       Decls { $$ = new node::Root($1, yylineno); root = $$; std::cout << "[parser root]: " << $$ << std::endl; }
+Root:       Decls { $$ = new node::Root($1, yylineno); root = $$; std::cout << "[parser root]: " << $$ << std::endl;printf("The yylino:%d\n",yylineno); }
             ;
 
 Decls:      Decls Decl  { $1->push_back($2);    $$ = $1; }
@@ -108,39 +108,45 @@ Decl:       VarDecl     { $$ = $1; }
             | FuncDecl  { $$ = $1; }
             ;
 
-VarDecl:    VarType VarList SEMI    { $$ = new  node::VarDecl($1, $2, yylineno); }
+VarDecl:    VarType VarList SEMI    { $$ = new  node::VarDecl($1, $2, yylineno); printf("1 The yylino:%d\n",yylineno);}
             ;
 
-VarList:    VarList COMMA VarInit   { $$ = $1; $$->push_back($3); }
+VarList:    VarList COMMA VarInit   { $$ = $1; $$->push_back($3); printf("2 The yylino:%d\n",yylineno);}
            | VarInit                { $$ = new  node::VarList(); $$->push_back($1); }
            ;
      
-VarInit:    ID              { $$ = new  node::VarInit(*$1, yylineno); }
+VarInit:    ID              { $$ = new  node::VarInit(*$1, yylineno); printf("3 The yylino:%d\n",yylineno);}
             | ID EQU Expr   { $$ = new  node::VarInit(*$1, $3, yylineno); }
             | ID EQU LC ExprList RC { $$ = new node::VarInit(*$1, $4, yylineno); }
             ;
 
-VarType:    TYPE                    { $$ = new  node::VarType(type2int(*$1), yylineno); }
+VarType:    TYPE                    { $$ = new  node::VarType(type2int(*$1), yylineno, false, false); printf("type is %s ,4 The yylino:%d\n",(*$1).c_str(),yylineno);}
             | TYPE PTR              { $$ = new  node::PtrType(type2int(*$1), yylineno); }
             | TYPE ARRAY LB INT RB  { $$ = new  node::ArrayType(type2int(*$1), $4, yylineno); }
             ;
 
-FuncDecl:   VarType ID LP Args RP SEMI          { $$ = new  node::FuncDecl($1, *$2, $4, yylineno); }
+FuncDecl:   VarType ID LP Args RP SEMI          { $$ = new  node::FuncDecl($1, *$2, $4, yylineno); printf("5 The yylino:%d\n",yylineno);}
             | VarType ID LP Args RP FuncBody    { $$ = new  node::FuncDecl($1, *$2, $4, yylineno, $6); }
             ;
 
 FuncBody:	LC Stms RC              { $$ = $2;} 
             ;
 
-Args:       Args COMMA Arg  { $$ = $1; $$->push_back($3); }
+Args:       _Args COMMA Arg  { $$ = $1; $$->push_back($3);printf("6 The yylino:%d\n",yylineno); }
+            |Arg            { $$ = new  node::Args();$$->push_back($1);printf("666 The yylino:%d\n",yylineno); }
             |               { $$ = new  node::Args(); }
             ;
 
-Arg:        VarType ID      { $$ = new  node::Arg($1, yylineno, *$2); }
-            | VarType       { $$ = new  node::Arg($1, yylineno); }
+_Args:       _Args COMMA Arg  { $$ = $1; $$->push_back($3);printf("6 The yylino:%d\n",yylineno); }
+            |Arg            { $$ = new  node::Args();$$->push_back($1);printf("666 The yylino:%d\n",yylineno); }
+            ;
+
+
+Arg:        VarType ID      { $$ = new  node::Arg($1, yylineno, *$2); printf("678 The yylino:%d\n",yylineno);}
+            | VarType       { $$ = new  node::Arg($1, yylineno); printf("7 The yylino:%d\n",yylineno);}
             ;  
 
-Stms:       Stms Stm        { $$ = $1; $$->push_back($2); }
+Stms:       Stms Stm        { $$ = $1; $$->push_back($2); printf("8 The yylino:%d\n",yylineno);}
             |               { $$ = new  node::Stms(); }
             ;
             
@@ -167,11 +173,11 @@ Expr:         Expr PLUS Expr            { $$ = new  node::BINOP($1, node::plus_,
             | Expr SHR Expr         { $$ = new  node::BINOP($1, node::shr_, $3, yylineno); }
             | Expr LT Expr      { $$ = new  node::BINOP($1, node::lt_, $3, yylineno); }
             | Expr LE Expr      { $$ = new  node::BINOP($1, node::le_, $3, yylineno); }
-            | Expr EQ Expr      { $$ = new  node::BINOP($1, node::eq_, $3, yylineno); }
+            | Expr EQ Expr      { $$ = new  node::BINOP($1, node::eq_, $3, yylineno); printf("9 The yylino:%d\n",yylineno);}
             | Expr GE Expr      { $$ = new  node::BINOP($1, node::ge_, $3, yylineno); }
             | Expr GT Expr      { $$ = new  node::BINOP($1, node::gt_, $3, yylineno); }
             | Expr NE Expr      { $$ = new  node::BINOP($1, node::ne_, $3, yylineno); }
-            | Expr EQU Expr      { $$ = new  node::BINOP($1, node::equ_, $3, yylineno); }
+            | Expr EQU Expr      { $$ = new  node::BINOP($1, node::equ_, $3, yylineno); printf("10 The yylino:%d\n",yylineno);}
             | Expr ADDEQ Expr       { $$ = new  node::BINOP($1, node::addeq_, $3, yylineno); }
             | Expr SUBEQ Expr       { $$ = new  node::BINOP($1, node::subeq_, $3, yylineno); }
             | Expr DIVEQ Expr       { $$ = new  node::BINOP($1, node::diveq_, $3, yylineno); }
@@ -190,7 +196,7 @@ Expr:         Expr PLUS Expr            { $$ = new  node::BINOP($1, node::plus_,
             | MULT Expr %prec NOT   { $$ = new  node::SOP($2, node::smult_, yylineno); }
             | BNOT Expr %prec NOT   { $$ = new  node::SOP($2, node::sbnot_, yylineno); }
             | Constant             { $$ = $1; }
-            | ID                { $$ = new  node::Id(*$1, yylineno); }
+            | ID                { $$ = new  node::Id(*$1, yylineno); printf("11 The yylino:%d\n",yylineno);}
             | ID LB Expr RB     { $$ = new  node::ArrayCall(*$1, $3, yylineno); }
             | ID LP ExprList RP { $$ = new  node::FuncCall(*$1, $3, yylineno); }
             ;
@@ -213,7 +219,7 @@ ReturnStm:  RETURN Expr SEMI    { $<stm>$ = new  node::ReturnStm($2, yylineno); 
             RETURN SEMI         { $$ = new  node::ReturnStm(NULL, yylineno); }
             ;
 
-IfStm:      IF LP Expr RP Block ELSE Block  { $$ = new  node::IfStm($3, $5, $7, true, yylineno); }
+IfStm:      IF LP Expr RP Block ELSE Block  { $$ = new  node::IfStm($3, $5, $7, true, yylineno); printf("If stm\n");}
             | IF LP Expr RP Block           { $$ = new  node::IfStm($3, $5, NULL, false, yylineno); }
             ;
 ForStm:     FOR LP Expr SEMI Expr SEMI Expr RP Block    { $$ = new  node::ForStm($3, $5, $7, $9, yylineno); }

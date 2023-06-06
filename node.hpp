@@ -76,27 +76,29 @@ namespace node{
     static std::string sops[6] = {
         " ","splus ", "ssub ", "not ","smult ", "sbnot "
     };
-
+#define LOG "[PARSE LOG]: "
     class Node {
     public:
-        Node(int line): line(line) {}
+        Node(int line): line(line) {std::cout<<LOG<<"Line "<<line<<std::endl;}
         virtual ~Node() {}
         virtual llvm::Value* CodeGen(CodeContext& context) {};
         int line;
     };
     class Stm : public Node {
     public:
-        Stm(int line): Node(line) {}
+        Stm(int line): Node(line) {std::cout <<LOG<<"Stm "<<std::endl;}
         ~Stm() {}
         virtual llvm::Value* CodeGen(CodeContext& context) {};
     };
     class VarType: public Node {
     public:
         int _type;
-
-        VarType(int __type, int line): _type(__type), Node(line) {}
+        bool _array;
+        bool _ptr;
+        VarType(int __type, int line,bool __array,bool __ptr): _type(__type), Node(line),_array(__array), _ptr(__ptr) {}
         ~VarType() {}
         virtual llvm::Value* CodeGen(CodeContext& context){};
+        // int line;
     };
     class Expr : public Node {
     public:
@@ -127,7 +129,7 @@ namespace node{
         Args* _args;
         Stms* _fb; 
         FuncDecl(VarType* __Type, const std::string& __FuncName, Args* __args, int line, Stms* __fb = NULL) :
-                _Type(__Type), _FuncName(__FuncName), _args(__args), _fb(__fb), Decl(line) {}
+                _Type(__Type), _FuncName(__FuncName), _args(__args), _fb(__fb), Decl(line) {std::cout <<LOG<<"Func Decl "<<__FuncName<<std::endl; }
         ~FuncDecl() {}
         llvm::Value* CodeGen(CodeContext& context);
         std::string des(){ return "Decl Func:" + tps[_Type->_type]+ _FuncName;}
@@ -138,7 +140,7 @@ namespace node{
         VarType* _Type;
         std::string _Name;
         Arg(VarType* __Type, int line,const std::string& __Name = "") :
-            _Type(__Type), _Name(__Name), Node(line) {}
+            _Type(__Type), _Name(__Name), Node(line) {std::cout <<LOG<<"Arg Decl "<<__Name<<std::endl;}
         ~Arg() {}
         llvm::Value* CodeGen(CodeContext& context);
     };
@@ -148,7 +150,7 @@ namespace node{
         VarType* _Type;
         VarList* _list;
         VarDecl(VarType* __Type, VarList* __list, int line) :
-            _Type(__Type), _list(__list), Decl(line) {}
+            _Type(__Type), _list(__list), Decl(line) {std::cout <<LOG<<"Var Decl "<<std::endl;}
         ~VarDecl() {}
         llvm::Value* CodeGen(CodeContext& context);
         std::string des(){ return "Decl Vars type:" + tps[_Type->_type];}
@@ -172,9 +174,8 @@ namespace node{
 
     class PtrType: public VarType {
     public:
-        bool _ptr;
         PtrType(int __type, int line) :
-            VarType(__type, line), _ptr(true) {}
+            VarType(__type, line, false, true) {}
         ~PtrType() {}
         llvm::Value* CodeGen(CodeContext& context){}
     };
@@ -182,9 +183,9 @@ namespace node{
     class ArrayType: public VarType {
     public:
         int _num;
-        bool _array;
+
         ArrayType(int __type, int __num, int line) :
-            VarType(__type, line), _num(__num), _array(true) {}
+            VarType(__type, line, true, false), _num(__num) {}
         ~ArrayType() {}
         llvm::Value* CodeGen(CodeContext& context){}
     };
@@ -214,7 +215,6 @@ namespace node{
         Block* _block;
         ForStm(Expr* __expr1, Expr* __expr2, Expr* __expr3, Block* __block, int line) :
             _expr1(__expr1), _expr2(__expr2), _expr3(__expr3), _block(__block), Stm(line) {}
-        ForStm() {}
         std::string des(){return "ForStm";}
         llvm::Value* CodeGen(CodeContext& context);
     };
@@ -234,7 +234,7 @@ namespace node{
         Expr* _expr;
         Block* _block;
         DoStm(Expr* __expr, Block* __block, int line) : _expr(__expr), _block(__block), Stm(line) {}
-        DoStm() {}
+        // DoStm() {}
         const Expr* getExpr(){ return _expr; }
         const Block* getBlock(){ return _block; }
         void changeExpr(Expr* __expr){ _expr = __expr;}
@@ -248,7 +248,7 @@ namespace node{
         Expr* _expr;
         Cases* _cases;
         SwitchStm(Expr* __expr, Cases* __cases, int line): _expr(__expr), _cases(__cases), Stm(line) {}
-        SwitchStm() {}
+        // SwitchStm() {}
         const Expr* getExpr(){ return _expr; }
         const Cases* getCaseList(){ return _cases; }
         void changeExpr(Expr* __expr){ _expr = __expr;}

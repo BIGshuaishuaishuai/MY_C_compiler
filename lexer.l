@@ -17,19 +17,20 @@
     #include <iostream>
     extern "C" int yywrap() {return 1;}
     // extern yyleng;
+    // int lineno = 0
     using namespace std;
 %}
-
+%option yylineno
 %option outfile="lexer.cpp"
 %option never-interactive
 %%
 
-"("     { return LP; }
-")"     { return RP; }
-"{"     { return LC; }
-"}"     { return RC; }
-"["     { return LB; }
-"]"     { return RB; }
+"("     { std::cout <<"( HERE "<< yylineno <<std::endl;return LP; }
+")"     { std::cout <<") HERE"<<std::endl;return RP; }
+"{"     { std::cout <<"{ HERE"<<std::endl;return LC; }
+"}"     { std::cout <<"} HERE"<<std::endl;return RC; }
+"["     { std::cout <<"[ HERE"<<std::endl;return LB; }
+"]"     { std::cout <<"] HERE"<<std::endl;return RB; }
 "+"     { return PLUS; }
 "-"     { return SUB; }
 "*"     { return MULT; }
@@ -58,7 +59,7 @@
 "||"    { return OR; }
 "|"     { return BOR; }
 "return"    { return RETURN; }
-"if"        { return IF; }
+"if"        { std::cout <<"IF HERE"<<std::endl;return IF; }
 "else"      { return ELSE; }
 "do"        { return DO; }
 "while"     { return WHILE; }
@@ -68,16 +69,17 @@
 "switch"	{ return SWITCH; }
 "case"		{ return CASE; }
 "default"	{ return DEFAULT; }
-"ptr"       { return PTR; }
+"ptr"       { std::cout <<"PTR HERE "<< yylineno <<std::endl;return PTR; }
 "array"     { return ARRAY; }
 ","     { return COMMA; }
 ";"     { return SEMI; }
 ":"     { return COLON; }
-" " | \t | \n { ; }
+" " | \t   { ; }
+"\n"      { ; }
 "//".*  { ; }
-"int"|"char"|"float"|"void" { yylval.type = new std::string(yytext, yyleng); return TYPE; }
+"int"|"char"|"float"|"void" { yylval.type = new std::string(yytext, yyleng); std::cout <<"type " << *yylval.type << " HERE "<< yylineno <<std::endl; return TYPE; }
 [0-9]+                      { yylval.ival = atoi(yytext); return INT; } 
-[A-Za-z_][0-9A-Za-z_]*      { yylval.sval = new std::string(yytext, yyleng); return ID; }
+[A-Za-z_][0-9A-Za-z_]*      { std::cout <<"ID HERE "<< yylineno <<std::endl;yylval.sval = new std::string(yytext, yyleng); return ID; }
 [0-9]+\.[0-9]+              { yylval.fval = atof(yytext); return FLOAT; }
 "\'"."\'"                   { yylval.cval = yytext[1]; return CHAR; }
 .       { printf("Lex Error at Line %d: Illegal lex %s.\n", yylineno, yytext); }

@@ -1,9 +1,10 @@
 
+??
 void temp(){
     int a,b,c;
     c = a*b;
 }
-
+??
 int main(){
     int i ;
     int a = 1,b = 1,tmp;
