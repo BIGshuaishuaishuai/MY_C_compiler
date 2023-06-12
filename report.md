@@ -123,11 +123,11 @@ lex提供了一些用于辅助解析词法的变量和函数，常用的有：
 "<="    { return LE; }
 "!="    { return NE; }
 "="     { return EQU; }
-"+="    { return ADDEQ; }
-"-="    { return SUBEQ; }
-"*="    { return MULEQ; }
-"/="    { return DIVEQ; }
-"%="    { return MODEQ; }
+"+="	{ return ADDEQ; }
+"-="	{ return SUBEQ; }
+"*="	{ return MULEQ; }
+"/="	{ return DIVEQ; }
+"%="	{ return MODEQ; }
 "<<="   { return SHLEQ; }
 ">>="   { return SHREQ; }
 "!"     { return NOT; }
@@ -144,22 +144,24 @@ lex提供了一些用于辅助解析词法的变量和函数，常用的有：
 "for"       { return FOR; }
 "break"     { return BREAK; }
 "continue"  { return CONTINUE; }
-"switch"    { return SWITCH; }
-"case"      { return CASE; }
-"default"   { return DEFAULT; }
+"switch"	{ return SWITCH; }
+"case"		{ return CASE; }
+"default"	{ return DEFAULT; }
 "ptr"       { return PTR; }
 "array"     { return ARRAY; }
 ","     { return COMMA; }
 ";"     { return SEMI; }
 ":"     { return COLON; }
-" " | \t | \n { ; }
-"//".*  { ; }       // 这里可以忽略注释
+" " | \t   { ; }
+"\n"      { ; }
+"//".*  { ; }
 "int"|"char"|"float"|"void" { yylval.type = new std::string(yytext, yyleng); return TYPE; }
 [0-9]+                      { yylval.ival = atoi(yytext); return INT; } 
 [A-Za-z_][0-9A-Za-z_]*      { yylval.sval = new std::string(yytext, yyleng); return ID; }
 [0-9]+\.[0-9]+              { yylval.fval = atof(yytext); return FLOAT; }
-\'.\'                       { yylval.cval = yytext[1]; return CHAR; }
+"\'"."\'"                   { yylval.cval = yytext[1]; return CHAR; }
 .       { printf("Lex Error at Line %d: Illegal lex %s.\n", yylineno, yytext); }
+
 ```
 
 其中有关变量类型的定义，我们用含有语义值的token(TYPE)表示一个变量类型的token，并将其语义值以string的形式传递到parser阶段具体分析其类型。
@@ -178,12 +180,12 @@ rules
 user's code
 ```
 
-在Yacc的定义部分，我们需要导入使用的库文件，并且举出需要用到的终结符和非终结符，以及一些优先级的说明。`%token xx`标记该类型为token，`%left`和`%right`用于解决规约-规约冲突，同时表示左结合/右结合性质，后定义的优先级更高。`%type<xx> xxx`则用于定义非终结符。
+在Yacc的定义部分，我们需要导入使用的库文件，并且举出需要用到的终结符和非终结符，以及一些优先级的说明。`%token xx`标记该类型为token，`%left`和`%right`用于解决规约-规约冲突，同时表示左结合/右结合性质，后定义的优先级更高。`%type<xx> xxx`则用于定义非终结符并声明其数据结构。
 
 由于C语言程序代码最外层都是定义和声明，所以我们设计的语法规则从Root出发，首先将代码分为一组组函数/变量定义和声明，然后再在具体的函数内部解析各个语句。基本的规则如下（由于Expression和Statement中的规约重复度高，而且比较简单，所以这里略去了一部分，只展示了CFG最基本的结构）。
 
 ```yacc
-Root:       Decls       { $$ = new node::Root(*$1); }
+Root:       Decls { $$ = new node::Root($1, yylineno); root = $$; std::cout << "[parser root]: " << $$ << std::endl;printf("The yylino:%d\n",yylineno); }
             ;
 
 Decls:      Decls Decl  { $1->push_back($2);    $$ = $1; }
@@ -194,31 +196,33 @@ Decl:       VarDecl     { $$ = $1; }
             | FuncDecl  { $$ = $1; }
             ;
 
-VarDecl:    VarType VarList SEMI    { $$ = new node::VarDecl($1, $2); }
+VarDecl:    VarType VarList SEMI    { $$ = new  node::VarDecl($1, $2, yylineno); }
             ;
 
 VarList:    VarList COMMA VarInit   { $$ = $1; $$->push_back($3); }
-           | VarInit                { $$ = new node::VarList(); $$->push_back($1); }
+           | VarInit                { $$ = new  node::VarList(); $$->push_back($1); }
            ;
      
-VarInit:    ID              { $$ = new node::VarInit(*$1); }
-            | ID EQU Expr   { $$ = new node::VarInit(*$1, $3); }
+VarInit:    ID              { $$ = new  node::VarInit(*$1, yylineno); }
+            | ID EQU Expr   { $$ = new  node::VarInit(*$1, $3, yylineno); }
+            | ID EQU LC ExprList RC { $$ = new node::VarInit(*$1, $4, yylineno); }
             ;
 
-VarType:    TYPE                    { $$ = new node::VarType(type2int(*$1)); }
-            | TYPE PTR              { $$ = new node::PtrType(type2int(*$1)); }
-            | TYPE ARRAY LB INT RB  { $$ = new node::ArrayType(type2int(*$1), $4); }
+VarType:    TYPE                    { $$ = new  node::VarType(type2int(*$1), yylineno, false, false); }
+            | TYPE PTR              { $$ = new  node::PtrType(type2int(*$1), yylineno); }
+            | TYPE ARRAY LB INT RB  { $$ = new  node::ArrayType(type2int(*$1), $4, yylineno); }
             ;
 
-FuncDecl:   VarType ID LP Args RP SEMI          { $$ = new node::FuncDecl($1, *$2, $4); }
-            | VarType ID LP Args RP FuncBody    { $$ = new node::FuncDecl($1, *$2, $4, $6); }
+FuncDecl:   VarType ID LP Args RP SEMI          { $$ = new  node::FuncDecl($1, *$2, $4, yylineno); }
+            | VarType ID LP Args RP FuncBody    { $$ = new  node::FuncDecl($1, *$2, $4, yylineno, $6); }
             ;
 
-FuncBody:   LC Stms RC              { $$ = $2;} 
+FuncBody:	LC Stms RC              { $$ = $2;} 
             ;
 
-Args:       Args COMMA Arg  { $$ = $1; $$->push_back($3); }
-            |               { $$ = new node::Args(); }
+Args:       _Args COMMA Arg  { $$ = $1; $$->push_back($3); }
+            |Arg            { $$ = new  node::Args();$$->push_back($1); }
+            |               { $$ = new  node::Args(); }
             ;
 
 Arg:        VarType ID      { $$ = new node::Args($1, *$2); }
@@ -293,34 +297,37 @@ typedef std::vector<Arg*> Args;
 ```c++
     class Node {
     public:
+        int line;
         Node() {}
         virtual ~Node() {}
         virtual llvm::Value* CodeGen(CodeContext& context) {};
     };
 ```
 其中的`CodeGen`是用于解析该语法树，生成最后的机器码，在下一部分会进行详细描述。
-每一个`Node`相当于书中的一个节点，根据其具体含义，选择不同的子类进行初始化，赋予其对应的值。
+每一个`Node`相当于树中的一个节点，根据其具体含义，选择不同的子类进行初始化，赋予其对应的值。
 以`BINOP`类为例，来跟踪其解析和构造过程：
 首先在`parser.y`中，根据`Expr`的出现的二元运算的不同规约(也即运算中使用的不同运算符号)，来构造不同类型的二元运算，以加法为例：
 ```c++
-Expr: Expr PLUS Expr { $$ = new  node::BINOP($1, node::plus_, $3); }
+Expr: Expr PLUS Expr { $$ = new node::BINOP($1, node::plus_, $3, yylineno); }
 ```
 再看`node.hpp`中，`BINOP`类的初始化过程：
 ```c++
-BINOP(Expr* lhs, int op, Expr* rhs) :
-    lhs(lhs), rhs(rhs), op(op) { }
+BINOP(Expr* lhs, int op, Expr* rhs, int line) :
+    lhs(lhs), rhs(rhs), op(op), Expr(line) { }
 ```
 其中的`lhs和rhs`作为该二元运算的两个运算数，构成了该节点的两个子节点，并且在`parser`的过程中，在之前的规约就已经生成，所以直接赋值即可，并且解析了其中的运算符`op`，在后续的代码生成中，根据不同的运算符，生成不同的机器码。
 假如其中的一个子节点是一个`Id`，另一个则是一个整型常量5，则将`lexer`中得到的名称，作为初始化值，来初始化该`id`:
 ```c++
-Expr: ID { $$ = new  node::Id(*$1); }
-Id(const std::string& __name) : _name(__name) { }
+Expr: ID { $$ = new  node::Id(*$1, yylineno); }
+Id(const std::string& __name, int line) : _name(__name), Expr(line) { }
 
 Expr: Constant { $$ = $1; }
-Constant(int __type) : _type(__type) { }
-Int(long long __value, int __type = 3) : Constant(__type), _value(__value) { }
+Constant: INT  { $$ = new node::Int($1, yylineno); }
+Constant(int __type, int line) : _type(__type), Expr(line) { }
+Int(long long __value, int line, int __type = 3) : Constant(__type, line), _value(__value) { }
 ```
 <img src="pic/tmp.gv.png" alt="1" style="zoom:50%;" />
+
 上述过程就是程序中，一个简单的语义分析，并构建树节点之间的关系的流程，而整个语法树的构建，则是放大该过程，将所有输入按照规约关系，自底向上生成最后的`Root`节点
 
 ## 六、代码生成和代码优化
@@ -369,7 +376,9 @@ public:
 - `opnum`:出现的操作符数，便于对其初始化
 - `fors`:`for`模块的数量，便于初始化
 - `blocks`:构建的代码块`block`的数量，同样便于初始化
+
 在这里，就需要用到在每个`Node`中定义的代码生成函数：`CodeGen`，对于每个节点，通过遍历子节点的方式，在`CodeBlock`中生成代码，在`llvm`中，最基本的概念就是`Value*`指针，对于一些操作，以及参与操作的数字，都是使用该指针来描述
+
 同样的，以某一个`BINOP`节点为例，查看代码的生成过程：
 ```c++
 Value* BINOP::CodeGen(CodeContext& context){
@@ -449,31 +458,25 @@ int main()
 
 ```shell
 ~/CP/MY_C_compiler$ ./lex_test
-
 type: int
 ID: main
 lp 
 rp 
-
 lc 
-
 type: int
 ID: a
 =  
 INT: 56
 ;  
-
 type: char
 ID: b
 ;  
-
 type: float
 *  
 ID: c
 =  
 FLOAT: 1.5
 ;  
-
 while 
 lp 
 ID: a
@@ -481,16 +484,13 @@ ID: a
 INT: 0
 rp 
 lc 
-
 ID: a
 =  
 ID: a
 -  
 INT: 1
 ;  
-
 rc 
-
 if 
 lp 
 ID: a
@@ -501,11 +501,9 @@ ID: b
 =  
 CHAR: a
 ;  
-
 return 
 INT: 0
 ;  
-
 rc 
 ```
 
