@@ -108,42 +108,42 @@ Decl:       VarDecl     { $$ = $1; }
             | FuncDecl  { $$ = $1; }
             ;
 
-VarDecl:    VarType VarList SEMI    { $$ = new  node::VarDecl($1, $2, yylineno); printf("1 The yylino:%d\n",yylineno);}
+VarDecl:    VarType VarList SEMI    { $$ = new  node::VarDecl($1, $2, yylineno); }
             ;
 
-VarList:    VarList COMMA VarInit   { $$ = $1; $$->push_back($3); printf("2 The yylino:%d\n",yylineno);}
+VarList:    VarList COMMA VarInit   { $$ = $1; $$->push_back($3); }
            | VarInit                { $$ = new  node::VarList(); $$->push_back($1); }
            ;
      
-VarInit:    ID              { $$ = new  node::VarInit(*$1, yylineno); printf("3 The yylino:%d\n",yylineno);}
+VarInit:    ID              { $$ = new  node::VarInit(*$1, yylineno); }
             | ID EQU Expr   { $$ = new  node::VarInit(*$1, $3, yylineno); }
             | ID EQU LC ExprList RC { $$ = new node::VarInit(*$1, $4, yylineno); }
             ;
 
-VarType:    TYPE                    { $$ = new  node::VarType(type2int(*$1), yylineno, false, false); printf("type is %s ,4 The yylino:%d\n",(*$1).c_str(),yylineno);}
+VarType:    TYPE                    { $$ = new  node::VarType(type2int(*$1), yylineno, false, false); }
             | TYPE PTR              { $$ = new  node::PtrType(type2int(*$1), yylineno); }
             | TYPE ARRAY LB INT RB  { $$ = new  node::ArrayType(type2int(*$1), $4, yylineno); }
             ;
 
-FuncDecl:   VarType ID LP Args RP SEMI          { $$ = new  node::FuncDecl($1, *$2, $4, yylineno); printf("5 The yylino:%d\n",yylineno);}
+FuncDecl:   VarType ID LP Args RP SEMI          { $$ = new  node::FuncDecl($1, *$2, $4, yylineno); }
             | VarType ID LP Args RP FuncBody    { $$ = new  node::FuncDecl($1, *$2, $4, yylineno, $6); }
             ;
 
 FuncBody:	LC Stms RC              { $$ = $2;} 
             ;
 
-Args:       _Args COMMA Arg  { $$ = $1; $$->push_back($3);printf("6 The yylino:%d\n",yylineno); }
-            |Arg            { $$ = new  node::Args();$$->push_back($1);printf("666 The yylino:%d\n",yylineno); }
+Args:       _Args COMMA Arg  { $$ = $1; $$->push_back($3); }
+            |Arg            { $$ = new  node::Args();$$->push_back($1); }
             |               { $$ = new  node::Args(); }
             ;
 
-_Args:       _Args COMMA Arg  { $$ = $1; $$->push_back($3);printf("6 The yylino:%d\n",yylineno); }
-            |Arg            { $$ = new  node::Args();$$->push_back($1);printf("666 The yylino:%d\n",yylineno); }
+_Args:       _Args COMMA Arg  { $$ = $1; $$->push_back($3); }
+            |Arg            { $$ = new  node::Args();$$->push_back($1); }
             ;
 
 
-Arg:        VarType ID      { $$ = new  node::Arg($1, yylineno, *$2); printf("678 The yylino:%d\n",yylineno);}
-            | VarType       { $$ = new  node::Arg($1, yylineno); printf("7 The yylino:%d\n",yylineno);}
+Arg:        VarType ID      { $$ = new  node::Arg($1, yylineno, *$2); }
+            | VarType       { $$ = new  node::Arg($1, yylineno); 
             ;  
 
 Stms:       Stms Stm        { $$ = $1; if($2 != NULL) $$->push_back($2); printf("8 The yylino:%d\n",yylineno);}
