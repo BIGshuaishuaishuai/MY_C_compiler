@@ -1808,7 +1808,7 @@ yyreduce:
 
   case 26:
 #line 149 "parser.y"
-                            { (yyval.stms) = (yyvsp[-1].stms); (yyval.stms)->push_back((yyvsp[0].stm)); printf("8 The yylino:%d\n",yylineno);}
+                            { (yyval.stms) = (yyvsp[-1].stms); if((yyvsp[0].stm) != NULL) (yyval.stms)->push_back((yyvsp[0].stm)); printf("8 The yylino:%d\n",yylineno);}
 #line 1813 "parser.cpp"
     break;
 

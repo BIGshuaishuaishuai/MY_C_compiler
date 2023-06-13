@@ -23,6 +23,7 @@ int main(int argc, char **argv)
     CodeContext codecontext;
     codecontext.CreateContext(root);
     // context.runCode();
+    verifyModule(*(codecontext.module));
     
     return 0;
 }
