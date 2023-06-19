@@ -353,6 +353,9 @@ private:
     Function* mainfunction;
 
 public:
+    std::map<std::string, Value*> global_vars;
+    std::map<std::string, CodeBlock*> func_table;
+    std::map<std::string, Value*>& cur_vars;
     Module *module;
     IRBuilder<> builder;
     int opnums;
