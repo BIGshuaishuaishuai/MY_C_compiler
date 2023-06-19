@@ -34,6 +34,8 @@
 #include <llvm/Transforms/InstCombine/InstCombine.h>
 #include <llvm/Transforms/Scalar.h>
 #include <llvm/Transforms/Scalar/GVN.h>
+#include "llvm/Bitcode/BitcodeWriter.h"
+#include "llvm/Support/raw_ostream.h"
 #include <llvm/Support/FileSystem.h>
 #include <llvm/Support/Host.h>
 #include <llvm/Support/TargetSelect.h>
@@ -71,7 +73,7 @@ public:
     int opnums;
     int fors;
     int blocks;
-    CodeContext(): module(new Module("main",Context)),head_block(NULL),tail_block(NULL),mainfunction(NULL),builder(IRBuilder<>(Context)),cur_vars(global_vars) {opnums = 0;fors = 0;blocks = 0;}
+    CodeContext(): module(new Module("main",Context)),head_block(NULL),tail_block(NULL),mainfunction(NULL),builder(IRBuilder<>(Context)),cur_vars(global_vars),opnums(0),fors(0),blocks(0) {}
     void CreateContext(node::Root* root);
     GenericValue runCode();
     CodeBlock* HeadBlock(){return head_block;}

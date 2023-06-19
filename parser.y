@@ -146,7 +146,7 @@ Arg:        VarType ID      { $$ = new  node::Arg($1, yylineno, *$2); }
             | VarType       { $$ = new  node::Arg($1, yylineno); 
             ;  
 
-Stms:       Stms Stm        { $$ = $1; $$->push_back($2); }
+Stms:       Stms Stm        { $$ = $1; if($2 != NULL) $$->push_back($2); printf("8 The yylino:%d\n",yylineno);}
             |               { $$ = new  node::Stms(); }
             ;
             

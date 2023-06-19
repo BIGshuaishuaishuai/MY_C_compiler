@@ -15,6 +15,7 @@
     #include "parser.hpp"
     #include <string>
     #include <iostream>
+    #include <cstdlib>
     extern "C" int yywrap() {return 1;}
     // extern yyleng;
     // int lineno = 0
@@ -71,10 +72,10 @@
 "default"	{ return DEFAULT; }
 "ptr"       { std::cout <<"PTR HERE "<< yylineno <<std::endl;return PTR; }
 "array"     { return ARRAY; }
-","     { return COMMA; }
+","     { std::cout <<"COMMA HERE " <<std::endl;return COMMA; }
 ";"     { return SEMI; }
 ":"     { return COLON; }
-" " | \t   { ; }
+" " | "\t"   { ; }
 "\n"      { ; }
 "//".*  { ; }
 "int"|"char"|"float"|"void" { yylval.type = new std::string(yytext, yyleng); std::cout <<"type " << *yylval.type << " HERE "<< yylineno <<std::endl; return TYPE; }
@@ -82,5 +83,5 @@
 [A-Za-z_][0-9A-Za-z_]*      { std::cout <<"ID HERE "<< yylineno <<std::endl;yylval.sval = new std::string(yytext, yyleng); return ID; }
 [0-9]+\.[0-9]+              { yylval.fval = atof(yytext); return FLOAT; }
 "\'"."\'"                   { yylval.cval = yytext[1]; return CHAR; }
-.       { printf("Lex Error at Line %d: Illegal lex %s.\n", yylineno, yytext); }
+.       { printf("Lex Error at Line %d: Illegal lex %s.\n", yylineno, yytext);exit(1); }
 %%

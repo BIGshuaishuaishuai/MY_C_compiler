@@ -1,21 +1,22 @@
-
-??
-void temp(){
-    int a,b,c;
-    c = a*b;
+int temp(){
+    int a = 2,b = 1,c;
+    c = a * b;
+    a = b / c;
+    a = a + 1;
+    b = b - 1;
+    c + 6;
+    
 }
-??
 int main(){
     int i ;
     int a = 1,b = 1,tmp;
+    tmp = temp();
 
     // tmp = a + b;
     for (i = 0; i < 10;i=i+1){
-        a = a + b;
-        tmp = a;
-        a = b;
-        b = tmp;
+        int a;
+        a = a + 1;
     }
-    
-    // return 0;
+    // a;
+    tmp;
 }
