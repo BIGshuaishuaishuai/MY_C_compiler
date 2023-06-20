@@ -1,0 +1,4 @@
+FROM d1msh1mm32/ccompiler:1.0
+WORKDIR /home/dim/
+RUN rm -r MY_C_COMPILER
+ADD MY_C_COMPILER.tar.gz /home/dim/MY_C_COMPILER
